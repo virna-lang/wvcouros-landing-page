@@ -26,10 +26,7 @@
       savedTheme = "";
     }
 
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const resolvedTheme = savedTheme === "dark" || savedTheme === "light"
-      ? savedTheme
-      : (prefersDark ? "dark" : "light");
+    const resolvedTheme = savedTheme === "dark" ? "dark" : "light";
 
     document.documentElement.setAttribute("data-theme", resolvedTheme);
     document.documentElement.style.colorScheme = resolvedTheme;
@@ -86,50 +83,50 @@
   }
 
   html[data-theme="dark"] {
-    --bg: #1b120f;
-    --soft: #251917;
-    --ink: #f3e8d8;
-    --muted: #c6b4a3;
-    --line: rgba(241, 225, 206, 0.12);
-    --white: #fff8f1;
-    --sold: rgba(107, 61, 45, 0.94);
+    --bg: #7d1329;
+    --soft: #65101f;
+    --ink: #fff2e9;
+    --muted: #f0c8bf;
+    --line: rgba(255, 235, 228, 0.16);
+    --white: #fff8f2;
+    --sold: rgba(73, 24, 17, 0.94);
     --consult: rgba(200, 154, 34, 0.92);
-    --header-bg: rgba(27, 18, 15, 0.9);
-    --surface: #211613;
-    --surface-soft: rgba(255, 248, 241, 0.06);
-    --story-panel-border: rgba(200, 154, 34, 0.22);
+    --header-bg: rgba(98, 14, 31, 0.92);
+    --surface: #6e1021;
+    --surface-soft: rgba(255, 248, 241, 0.07);
+    --story-panel-border: rgba(255, 225, 200, 0.16);
     --story-panel-bg:
-      radial-gradient(circle at top left, rgba(200, 154, 34, 0.12), transparent 30%),
-      linear-gradient(180deg, #2c1d18 0%, #211613 100%);
-    --story-accent-primary: rgba(200, 154, 34, 0.08);
-    --story-accent-secondary: rgba(109, 20, 12, 0.16);
-    --story-copy-color: rgba(243, 232, 216, 0.82);
-    --story-shadow: 0 26px 64px rgba(7, 4, 3, 0.42);
-    --modal-overlay-bg: rgba(13, 8, 7, 0.66);
-    --modal-shadow: 0 24px 70px rgba(2, 1, 1, 0.5);
+      radial-gradient(circle at top left, rgba(233, 190, 122, 0.16), transparent 30%),
+      linear-gradient(180deg, #8d1730 0%, #67101f 100%);
+    --story-accent-primary: rgba(255, 240, 226, 0.08);
+    --story-accent-secondary: rgba(74, 10, 22, 0.22);
+    --story-copy-color: rgba(255, 241, 232, 0.84);
+    --story-shadow: 0 26px 64px rgba(31, 4, 11, 0.34);
+    --modal-overlay-bg: rgba(34, 4, 11, 0.62);
+    --modal-shadow: 0 24px 70px rgba(21, 2, 7, 0.42);
     --modal-visual-bg:
-      radial-gradient(circle at center, rgba(85, 59, 49, 0.76), rgba(33, 22, 19, 0.96) 70%),
+      radial-gradient(circle at center, rgba(255, 240, 230, 0.18), rgba(101, 16, 31, 0.96) 70%),
       var(--soft);
-    --modal-nav-bg: rgba(255, 248, 241, 0.1);
-    --modal-nav-shadow: 0 12px 26px rgba(6, 4, 3, 0.34);
-    --modal-thumb-bg: rgba(255, 248, 241, 0.04);
-    --whatsapp-btn-bg: #eadcc9;
-    --whatsapp-btn-color: #4f2217;
-    --whatsapp-btn-hover-bg: #6d140c;
+    --modal-nav-bg: rgba(255, 248, 241, 0.14);
+    --modal-nav-shadow: 0 12px 26px rgba(22, 3, 7, 0.28);
+    --modal-thumb-bg: rgba(255, 248, 241, 0.06);
+    --whatsapp-btn-bg: #fff0e7;
+    --whatsapp-btn-color: #68101f;
+    --whatsapp-btn-hover-bg: #4e0917;
     --whatsapp-btn-hover-color: #fff8f1;
-    --whatsapp-btn-disabled-bg: #6b574d;
+    --whatsapp-btn-disabled-bg: #8f5d69;
     --whatsapp-btn-disabled-color: rgba(255, 248, 241, 0.82);
-    --cta-card-bg: linear-gradient(135deg, #3d180f 0%, #532218 56%, #693123 100%);
-    --cta-shadow: 0 26px 60px rgba(5, 3, 2, 0.32);
+    --cta-card-bg: linear-gradient(135deg, #57111d 0%, #6d1222 56%, #931933 100%);
+    --cta-shadow: 0 26px 60px rgba(30, 3, 9, 0.28);
     --cta-primary-bg: rgba(255, 248, 241, 0.92);
-    --cta-primary-color: #532218;
-    --cta-secondary-bg: rgba(255, 248, 241, 0.08);
-    --cta-secondary-border: rgba(255, 248, 241, 0.16);
-    --theme-toggle-bg: rgba(246, 232, 216, 0.1);
-    --theme-toggle-border: rgba(246, 232, 216, 0.16);
-    --theme-toggle-color: #f1ddc4;
-    --theme-toggle-shadow: 0 18px 38px rgba(5, 3, 2, 0.34);
-    --theme-toggle-hover-bg: rgba(246, 232, 216, 0.16);
+    --cta-primary-color: #6b1121;
+    --cta-secondary-bg: rgba(255, 248, 241, 0.1);
+    --cta-secondary-border: rgba(255, 248, 241, 0.18);
+    --theme-toggle-bg: rgba(255, 244, 237, 0.12);
+    --theme-toggle-border: rgba(255, 244, 237, 0.18);
+    --theme-toggle-color: #fff0e2;
+    --theme-toggle-shadow: 0 18px 38px rgba(30, 3, 9, 0.3);
+    --theme-toggle-hover-bg: rgba(255, 244, 237, 0.18);
   }
 
   * {

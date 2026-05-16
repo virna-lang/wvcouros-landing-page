@@ -104,12 +104,7 @@
   }
 
   function resolveThemePreference(preference) {
-    if (preference === "light" || preference === "dark") {
-      return preference;
-    }
-
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    return prefersDark ? "dark" : "light";
+    return preference === "dark" ? "dark" : "light";
   }
 
   function applyTheme(theme) {
@@ -140,23 +135,6 @@
       saveThemePreference(nextTheme);
       applyTheme(nextTheme);
     });
-
-    if (!window.matchMedia) {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handlePreferenceChange = function() {
-      if (!readStoredThemePreference()) {
-        applyTheme(resolveThemePreference(""));
-      }
-    };
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", handlePreferenceChange);
-    } else if (typeof mediaQuery.addListener === "function") {
-      mediaQuery.addListener(handlePreferenceChange);
-    }
   }
 
   function parseList(value) {

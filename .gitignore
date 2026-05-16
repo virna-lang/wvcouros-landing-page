@@ -1,0 +1,17 @@
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Apps Script (reference only, not needed for deploy)
+apps-script/
+
+# CSV model (reference only)
+modelo-planilha.csv
+
+# Guide (reference only)
+GUIA-PLANILHA-APPS-SCRIPT.md

@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VW Couros | Catálogo</title>
+<meta
+  name="description"
+  content="Catálogo de bolsas em couro da VW Couros com modelos, cores e preços, com atendimento direto pelo WhatsApp."
+/>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --burgundy: #6d140c;
+    --gold: #c89a22;
+    --bg: #fbfaf7;
+    --soft: #f4efe8;
+    --ink: #2a2424;
+    --muted: #978b87;
+    --line: #ece5dc;
+    --white: #ffffff;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "Inter", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.06;
+    letter-spacing: 0.01em;
+  }
+
+  .container {
+    width: min(1280px, calc(100vw - 48px));
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(251, 250, 247, 0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav {
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .nav-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 34px;
+  }
+
+  .nav-side.right {
+    justify-content: flex-end;
+  }
+
+  .nav-link {
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink);
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    opacity: 0.58;
+  }
+
+  .nav-logo img {
+    width: min(200px, 34vw);
+    min-width: 140px;
+  }
+
+  .hero {
+    padding: 98px 0 146px;
+    text-align: center;
+  }
+
+  .hero .eyebrow {
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.2rem, 7vw, 5.4rem);
+    max-width: 10ch;
+    margin: 0 auto 26px;
+    font-weight: 300;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--burgundy);
+    font-weight: 400;
+  }
+
+  .hero p {
+    max-width: 520px;
+    margin: 0 auto 44px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .hero-link {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--ink);
+    transition: opacity 0.2s ease;
+  }
+
+  .hero-link:hover,
+  .hero-link:focus-visible {
+    opacity: 0.58;
+  }
+
+  .catalog {
+    padding: 0 0 110px;
+  }
+
+  .catalog-header {
+    text-align: center;
+    margin-bottom: 46px;
+  }
+
+  .catalog-header .eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .catalog-header h2 {
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    font-weight: 300;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 30px;
+  }
+
+  .product-card {
+    text-align: center;
+  }
+
+  .product-card button {
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .product-image {
+    aspect-ratio: 4 / 5;
+    background:
+      radial-gradient(circle at center, rgba(255, 255, 255, 0.84), rgba(244, 239, 232, 0.95) 70%),
+      var(--soft);
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+
+  .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.28s ease;
+  }
+
+  .product-card button:hover .product-image img,
+  .product-card button:focus-visible .product-image img {
+    transform: scale(1.02);
+  }
+
+  .product-name {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .product-price {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(42, 36, 36, 0.42);
+    padding: 24px;
+    backdrop-filter: blur(8px);
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal {
+    position: relative;
+    width: min(1040px, 100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: var(--bg);
+    display: grid;
+    grid-template-columns: minmax(340px, 1.08fr) minmax(320px, 0.92fr);
+    box-shadow: 0 24px 70px rgba(23, 15, 13, 0.16);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .modal-close:hover,
+  .modal-close:focus-visible {
+    color: var(--burgundy);
+  }
+
+  .modal-visual {
+    padding: 28px;
+    background:
+      radial-gradient(circle at center, rgba(255, 255, 255, 0.84), rgba(244, 239, 232, 0.95) 70%),
+      var(--soft);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-visual img {
+    width: 100%;
+    height: 100%;
+    max-height: 72vh;
+    object-fit: contain;
+  }
+
+  .modal-thumbs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .modal-thumb {
+    width: 64px;
+    height: 82px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .modal-thumb.active {
+    border-color: var(--burgundy);
+  }
+
+  .modal-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .modal-body {
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-body .eyebrow {
+    margin-bottom: 18px;
+  }
+
+  .modal-body h2 {
+    font-size: 52px;
+    margin-bottom: 14px;
+    font-weight: 300;
+  }
+
+  .modal-description {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.75;
+    margin-bottom: 34px;
+  }
+
+  .modal-price {
+    margin-bottom: 34px;
+  }
+
+  .modal-price strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .modal-price span {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 30px;
+    color: var(--ink);
+  }
+
+  .modal-section {
+    padding: 22px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .modal-section h3 {
+    font-family: "Inter", sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .modal-section p,
+  .modal-section li {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.7;
+  }
+
+  .modal-features {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+
+  .modal-colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .color-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--ink);
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .color-option.active {
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+  }
+
+  .color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+  }
+
+  .whatsapp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    width: 100%;
+    margin-top: 32px;
+    background: #2f2828;
+    color: var(--white);
+    border: none;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    transition: background 0.2s ease;
+  }
+
+  .whatsapp-btn:hover,
+  .whatsapp-btn:focus-visible {
+    background: var(--burgundy);
+  }
+
+  .cta-section {
+    padding: 0 0 84px;
+  }
+
+  .cta-card {
+    background: linear-gradient(135deg, #61170f 0%, #7d2014 56%, #8b2d1b 100%);
+    color: var(--white);
+    border-radius: 34px;
+    padding: 42px 34px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    gap: 36px;
+    box-shadow: 0 26px 60px rgba(109, 20, 12, 0.18);
+  }
+
+  .cta-card .eyebrow {
+    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 12px;
+  }
+
+  .cta-card h2 {
+    color: var(--white);
+    font-size: clamp(2.4rem, 4vw, 4rem);
+    max-width: 12ch;
+    margin-bottom: 12px;
+  }
+
+  .cta-card p {
+    color: rgba(255, 255, 255, 0.82);
+    max-width: 46ch;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .cta-button.primary {
+    background: var(--bg);
+    color: var(--burgundy);
+  }
+
+  .cta-button.secondary {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--white);
+  }
+
+  .cta-button:hover,
+  .cta-button:focus-visible {
+    opacity: 0.88;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 26px 0 36px;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .footer-brand img {
+    width: 42px;
+  }
+
+  .footer-brand strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+
+  .footer-brand span,
+  .footer-copy {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  @media (max-width: 980px) {
+    .products-grid,
+    .cta-card,
+    .modal {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-card h2 {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      width: min(100vw - 32px, 1280px);
+    }
+
+    .nav {
+      min-height: auto;
+      padding: 16px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .nav-side,
+    .nav-side.right {
+      flex: 0 0 100%;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .nav-logo {
+      order: -1;
+    }
+
+    .hero {
+      padding: 64px 0 94px;
+    }
+
+    .products-grid {
+      gap: 24px;
+    }
+
+    .modal-overlay {
+      padding: 0;
+    }
+
+    .modal-body {
+      padding: 34px 24px;
+    }
+
+    .modal-body h2 {
+      font-size: 42px;
+    }
+
+    .cta-card {
+      padding: 34px 24px;
+      border-radius: 28px;
+    }
+
+    .footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <nav class="nav-side" aria-label="Navegação principal">
+      <a class="nav-link" href="#catalogo">Catálogo</a>
+      <a class="nav-link" href="#contato">Contato</a>
+    </nav>
+
+    <a class="nav-logo" href="#top" aria-label="VW Couros">
+      <img src="assets/logo-horizontal.png" alt="VW Couros" />
+    </a>
+
+    <div class="nav-side right">
+      <a class="nav-link" href="https://instagram.com/wvcouros">Instagram</a>
+      <a class="nav-link" id="navWhatsapp" href="#">WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="container">
+      <div class="eyebrow">Coleção</div>
+      <h1>Bolsas em couro <br /><em>autêntico.</em></h1>
+      <p>Peças sofisticadas, com acabamento artesanal e tempo de vida pra acompanhar você por anos.</p>
+      <a class="hero-link" href="#catalogo">Ver coleção</a>
+    </div>
+  </section>
+
+  <section class="catalog" id="catalogo">
+    <div class="container">
+      <div class="catalog-header">
+        <div class="eyebrow">Catálogo</div>
+        <h2>Nossas peças</h2>
+      </div>
+
+      <div class="products-grid" id="productsGrid"></div>
+    </div>
+  </section>
+
+  <section class="cta-section" id="contato">
+    <div class="container">
+      <div class="cta-card">
+        <div>
+          <div class="eyebrow">Atendimento</div>
+          <h2>Gostou de uma peça? A próxima etapa é uma conversa.</h2>
+          <p>
+            A cliente visualiza o catálogo, escolhe o modelo e segue para o WhatsApp com uma mensagem pronta.
+            Simples para quem compra e simples para você manter no ar.
+          </p>
+        </div>
+
+        <div class="cta-actions">
+          <a class="cta-button primary" id="ctaWhatsapp" href="#">
+            Abrir WhatsApp
+          </a>
+          <a class="cta-button secondary" href="https://instagram.com/wvcouros">
+            Ver Instagram
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="assets/logo-circular.png" alt="VW Couros" />
+      <div>
+        <strong>VW Couros</strong>
+        <span>Couro autêntico, acabamento artesanal e presença elegante.</span>
+      </div>
+    </div>
+
+    <div class="footer-copy">© <span id="year"></span> VW Couros. Catálogo estático para divulgação.</div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="if (event.target === this) closeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
+    <button class="modal-close" type="button" aria-label="Fechar" onclick="closeModal()">×</button>
+
+    <div class="modal-visual">
+      <img id="modalImage" src="" alt="" />
+      <div class="modal-thumbs" id="modalThumbs"></div>
+    </div>
+
+    <div class="modal-body">
+      <div class="eyebrow">VW Couros</div>
+      <h2 id="modalName"></h2>
+      <p class="modal-description" id="modalDescription"></p>
+
+      <div class="modal-price">
+        <strong>Valor à vista</strong>
+        <span id="modalPrice"></span>
+      </div>
+
+      <div class="modal-section" id="modalColorsSection">
+        <h3>Cores</h3>
+        <div class="modal-colors" id="modalColors"></div>
+      </div>
+
+      <div class="modal-section">
+        <h3>Detalhes</h3>
+        <ul class="modal-features" id="modalFeatures"></ul>
+      </div>
+
+      <div class="modal-section">
+        <h3>Pagamento</h3>
+        <p id="modalPayment"></p>
+      </div>
+
+      <div class="modal-section">
+        <h3>Entrega</h3>
+        <p id="modalDelivery"></p>
+      </div>
+
+      <a class="whatsapp-btn" id="modalWhatsapp" href="#">
+        Comprar pelo WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="app-config.js"></script>
+<script src="produtos.js"></script>
+<script>
+  const WHATSAPP_NUMBER = "5585997586148";
+  const PRODUCTS_ENDPOINT =
+    window.VW_CONFIG && typeof window.VW_CONFIG.productsEndpoint === "string"
+      ? window.VW_CONFIG.productsEndpoint.trim()
+      : "";
+  const COLOR_MAP = {
+    preto: "#1a1a1a",
+    caramelo: "#aa5b2f",
+    whisky: "#b4652b",
+    bordô: "#6f1b1b",
+    bordo: "#6f1b1b",
+    café: "#4b3025",
+    cafe: "#4b3025",
+    tabaco: "#7b5535"
+  };
+
+  let PRODUCTS = normalizeProducts(Array.isArray(window.VW_PRODUCTS) ? window.VW_PRODUCTS : []);
+
+  const productsGrid = document.getElementById("productsGrid");
+  const navWhatsapp = document.getElementById("navWhatsapp");
+  const ctaWhatsapp = document.getElementById("ctaWhatsapp");
+  const modal = document.getElementById("modal");
+  const modalImage = document.getElementById("modalImage");
+  const modalThumbs = document.getElementById("modalThumbs");
+  const modalName = document.getElementById("modalName");
+  const modalDescription = document.getElementById("modalDescription");
+  const modalPrice = document.getElementById("modalPrice");
+  const modalColors = document.getElementById("modalColors");
+  const modalFeatures = document.getElementById("modalFeatures");
+  const modalPayment = document.getElementById("modalPayment");
+  const modalDelivery = document.getElementById("modalDelivery");
+  const modalWhatsapp = document.getElementById("modalWhatsapp");
+  const modalColorsSection = document.getElementById("modalColorsSection");
+
+  let currentProduct = null;
+  let currentColor = null;
+  let currentImage = null;
+
+  function normalizeProducts(items) {
+    return (Array.isArray(items) ? items : [])
+      .map(function(item, index) {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+
+        const name = String(item.name || item.nome || "").trim();
+        if (!name) {
+          return null;
+        }
+
+        return {
+          id: String(item.id || slugify(name + "-" + index)).trim(),
+          name: name,
+          price: parsePrice(item.price != null ? item.price : item.preco),
+          image: String(item.image || item.imagem || "").trim(),
+          images: parseList(item.images != null ? item.images : item.imagens),
+          colorImages: parseColorImages(item.colorImages != null ? item.colorImages : item.variacoes),
+          description: String(item.description || item.descricao || "").trim(),
+          colors: parseList(item.colors != null ? item.colors : item.cores),
+          features: parseList(item.features != null ? item.features : item.detalhes),
+          payment: String(item.payment || item.pagamento || "A combinar pelo WhatsApp").trim(),
+          delivery: String(item.delivery || item.entrega || "Taxa de entrega a combinar pelo WhatsApp").trim()
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function parseColorImages(value) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const mapped = {};
+
+      Object.keys(value).forEach(function(key) {
+        const colorName = String(key).trim();
+        const imageUrl = String(value[key] || "").trim();
+        if (!colorName || !imageUrl) {
+          return;
+        }
+
+        mapped[colorName] = imageUrl;
+      });
+
+      return mapped;
+    }
+
+    const map = {};
+    const entries = parseList(value);
+
+    entries.forEach(function(entry) {
+      const parts = String(entry).split("::");
+      if (parts.length < 2) {
+        return;
+      }
+
+      const colorName = String(parts[0]).trim();
+      const imageUrl = parts.slice(1).join("::").trim();
+      if (!colorName || !imageUrl) {
+        return;
+      }
+
+      map[colorName] = imageUrl;
+    });
+
+    return map;
+  }
+
+  function parseList(value) {
+    if (Array.isArray(value)) {
+      return value.map(function(item) {
+        return String(item).trim();
+      }).filter(Boolean);
+    }
+
+    const text = String(value || "").trim();
+    if (!text) {
+      return [];
+    }
+
+    const separator = text.indexOf("|") >= 0 ? "|" : (text.indexOf("\n") >= 0 ? "\n" : ",");
+    return text.split(separator).map(function(item) {
+      return String(item).trim();
+    }).filter(Boolean);
+  }
+
+  function parsePrice(value) {
+    if (typeof value === "number") {
+      return value;
+    }
+
+    const normalized = String(value || "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "");
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function slugify(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function buildDefaultWhatsappLink() {
+    return buildWhatsappUrl("Olá! Quero atendimento sobre as bolsas da VW Couros.");
+  }
+
+  function buildWhatsappUrl(message) {
+    return "https://api.whatsapp.com/send?phone=" + WHATSAPP_NUMBER + "&text=" + encodeURIComponent(message);
+  }
+
+  function formatPrice(value) {
+    return Number(value).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+
+  function colorHex(name) {
+    return COLOR_MAP[name.toLowerCase()] || "#b38d73";
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function(char) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char];
+    });
+  }
+
+  function buildWhatsappLink(product, color) {
+    const colorPart = color ? " na cor " + color : "";
+    const message =
+      "Olá! Tenho interesse na " +
+      product.name +
+      colorPart +
+      " (" +
+      formatPrice(product.price) +
+      "). Pode me passar mais informações?";
+
+    return buildWhatsappUrl(message);
+  }
+
+  function getPrimaryImage(product) {
+    if (product.image) {
+      return product.image;
+    }
+
+    if (product.images && product.images.length) {
+      return product.images[0];
+    }
+
+    if (product.colorImages) {
+      const firstColorImage = Object.values(product.colorImages)[0];
+      if (firstColorImage) {
+        return firstColorImage;
+      }
+    }
+
+    return "";
+  }
+
+  function getColorImage(product, color) {
+    if (!product || !product.colorImages || !color) {
+      return "";
+    }
+
+    return product.colorImages[color] || "";
+  }
+
+  function getGalleryImages(product) {
+    const list = [];
+    const seen = new Set();
+
+    function addImage(url) {
+      const value = String(url || "").trim();
+      if (!value || seen.has(value)) {
+        return;
+      }
+
+      seen.add(value);
+      list.push(value);
+    }
+
+    addImage(product.image);
+    (product.images || []).forEach(addImage);
+    Object.values(product.colorImages || {}).forEach(addImage);
+
+    return list;
+  }
+
+  function setModalImage(url, alt) {
+    currentImage = String(url || "").trim();
+    modalImage.src = currentImage;
+    modalImage.alt = alt || "";
+    renderModalThumbs();
+  }
+
+  function renderModalThumbs() {
+    if (!currentProduct) {
+      modalThumbs.innerHTML = "";
+      return;
+    }
+
+    const gallery = getGalleryImages(currentProduct);
+    if (gallery.length <= 1) {
+      modalThumbs.innerHTML = "";
+      return;
+    }
+
+    modalThumbs.innerHTML = gallery.map(function(url) {
+      const activeClass = url === currentImage ? "modal-thumb active" : "modal-thumb";
+      return (
+        '<button type="button" class="' +
+        activeClass +
+        '" data-thumb="' +
+        escapeHtml(url) +
+        '">' +
+        '<img src="' +
+        escapeHtml(url) +
+        '" alt="' +
+        escapeHtml(currentProduct.name) +
+        '" />' +
+        "</button>"
+      );
+    }).join("");
+
+    modalThumbs.querySelectorAll("[data-thumb]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        setModalImage(button.getAttribute("data-thumb"), currentProduct.name);
+      });
+    });
+  }
+
+  function renderProducts() {
+    if (!PRODUCTS.length) {
+      productsGrid.innerHTML = "";
+      return;
+    }
+
+    productsGrid.innerHTML = PRODUCTS.map(function(product) {
+      return (
+        '<article class="product-card">' +
+        '<button type="button" data-product="' +
+        product.id +
+        '">' +
+        '<div class="product-image">' +
+        '<img src="' +
+        getPrimaryImage(product) +
+        '" alt="' +
+        escapeHtml(product.name) +
+        '" />' +
+        "</div>" +
+        '<h3 class="product-name">' +
+        escapeHtml(product.name) +
+        "</h3>" +
+        '<div class="product-price">' +
+        formatPrice(product.price) +
+        "</div>" +
+        "</button>" +
+        "</article>"
+      );
+    }).join("");
+
+    productsGrid.querySelectorAll("[data-product]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        const product = PRODUCTS.find(function(item) {
+          return item.id === button.getAttribute("data-product");
+        });
+        openModal(product);
+      });
+    });
+  }
+
+  function renderModalColors(product) {
+    if (!product.colors || !product.colors.length) {
+      modalColorsSection.style.display = "none";
+      return;
+    }
+
+    modalColorsSection.style.display = "";
+    modalColors.innerHTML = product.colors.map(function(color) {
+      const activeClass = color === currentColor ? "color-option active" : "color-option";
+      return (
+        '<button type="button" class="' +
+        activeClass +
+        '" data-color="' +
+        escapeHtml(color) +
+        '">' +
+        '<span class="color-dot" style="background:' +
+        colorHex(color) +
+        '"></span>' +
+        "<span>" +
+        escapeHtml(color) +
+        "</span>" +
+        "</button>"
+      );
+    }).join("");
+
+    modalColors.querySelectorAll("[data-color]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        currentColor = button.getAttribute("data-color");
+        const colorImage = getColorImage(product, currentColor);
+        if (colorImage) {
+          setModalImage(colorImage, product.name + " na cor " + currentColor);
+        }
+        renderModalColors(product);
+        modalWhatsapp.href = buildWhatsappLink(product, currentColor);
+      });
+    });
+  }
+
+  function openModal(product) {
+    if (!product) {
+      return;
+    }
+
+    currentProduct = product;
+    currentColor = product.colors && product.colors.length ? product.colors[0] : null;
+
+    const initialImage = getColorImage(product, currentColor) || getPrimaryImage(product);
+    setModalImage(initialImage, product.name);
+    modalName.textContent = product.name;
+    modalDescription.textContent = product.description;
+    modalPrice.textContent = formatPrice(product.price);
+    modalPayment.textContent = product.payment;
+    modalDelivery.textContent = product.delivery;
+    modalWhatsapp.href = buildWhatsappLink(product, currentColor);
+    modalFeatures.innerHTML = product.features.map(function(feature) {
+      return "<li>" + escapeHtml(feature) + "</li>";
+    }).join("");
+
+    renderModalColors(product);
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
+
+  window.closeModal = function() {
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+    currentProduct = null;
+    currentColor = null;
+    currentImage = null;
+  };
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape" && modal.classList.contains("active")) {
+      closeModal();
+    }
+  });
+
+  function applyRemoteProducts(payload) {
+    const remoteList = Array.isArray(payload)
+      ? payload
+      : (payload && Array.isArray(payload.products) ? payload.products : []);
+
+    const normalized = normalizeProducts(remoteList);
+    if (!normalized.length) {
+      return;
+    }
+
+    PRODUCTS = normalized;
+    renderProducts();
+
+    if (currentProduct) {
+      const updatedProduct = PRODUCTS.find(function(item) {
+        return item.id === currentProduct.id;
+      });
+
+      if (updatedProduct) {
+        openModal(updatedProduct);
+      }
+    }
+  }
+
+  function cleanupRemoteLoader(script, callbackName) {
+    if (script && script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+
+    try {
+      delete window[callbackName];
+    } catch (error) {
+      window[callbackName] = undefined;
+    }
+  }
+
+  function loadRemoteProducts() {
+    if (!PRODUCTS_ENDPOINT) {
+      return;
+    }
+
+    const callbackName = "__vwProductsCallback";
+    const script = document.createElement("script");
+    const separator = PRODUCTS_ENDPOINT.indexOf("?") >= 0 ? "&" : "?";
+
+    window[callbackName] = function(payload) {
+      applyRemoteProducts(payload);
+      cleanupRemoteLoader(script, callbackName);
+    };
+
+    script.onerror = function() {
+      cleanupRemoteLoader(script, callbackName);
+    };
+
+    script.src = PRODUCTS_ENDPOINT + separator + "callback=" + callbackName + "&ts=" + Date.now();
+    document.head.appendChild(script);
+  }
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+  navWhatsapp.href = buildDefaultWhatsappLink();
+  ctaWhatsapp.href = buildDefaultWhatsappLink();
+  renderProducts();
+  loadRemoteProducts();
+</script>
+</body>
+</html>

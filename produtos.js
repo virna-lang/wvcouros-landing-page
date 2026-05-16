@@ -45,12 +45,12 @@ window.VW_PRODUCTS = [
     id: "beatriz",
     name: "Bolsa Beatriz",
     price: 389.9,
-    image: "assets/products/bolsa-beatriz.jpg",
+    image: "assets/products/bolsa-beatriz.png",
     images: [
-      "assets/products/bolsa-beatriz.jpg"
+      "assets/products/bolsa-beatriz.png"
     ],
     colorImages: {
-      Preto: "assets/products/bolsa-beatriz.jpg"
+      Preto: "assets/products/bolsa-beatriz.png"
     },
     description: "Bolsa de linhas limpas e elegantes, pensada para acompanhar do casual ao mais alinhado.",
     colors: ["Preto", "Café", "Tabaco"],

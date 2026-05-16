@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VW Couros | Catálogo</title>
+<title>VW Couros | Catalogo</title>
 <meta
   name="description"
-  content="Catálogo de bolsas em couro da VW Couros com modelos, cores e preços, com atendimento direto pelo WhatsApp."
+  content="Catalogo de bolsas em couro da VW Couros com modelos, cores e precos, com atendimento direto pelo WhatsApp."
 />
 <link rel="icon" type="image/png" href="assets/favicon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,6 +25,8 @@
     --muted: #978b87;
     --line: #ece5dc;
     --white: #ffffff;
+    --sold: rgba(85, 36, 24, 0.9);
+    --consult: rgba(200, 154, 34, 0.92);
   }
 
   * {
@@ -211,6 +213,7 @@
   }
 
   .product-image {
+    position: relative;
     aspect-ratio: 4 / 5;
     background:
       radial-gradient(circle at center, rgba(255, 255, 255, 0.84), rgba(244, 239, 232, 0.95) 70%),
@@ -223,12 +226,17 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: transform 0.28s ease;
+    transition: transform 0.28s ease, opacity 0.28s ease;
   }
 
   .product-card button:hover .product-image img,
   .product-card button:focus-visible .product-image img {
     transform: scale(1.02);
+  }
+
+  .product-photo.is-muted,
+  #modalImage.is-muted {
+    opacity: 0.46;
   }
 
   .product-name {
@@ -240,6 +248,55 @@
     color: var(--muted);
     font-size: 13px;
     letter-spacing: 0.04em;
+  }
+
+  .product-badge,
+  .product-status-badge,
+  .modal-badge,
+  .modal-visual-status,
+  .color-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .product-badge,
+  .product-status-badge {
+    position: absolute;
+    top: 14px;
+    z-index: 2;
+  }
+
+  .product-badge,
+  .modal-badge {
+    left: 14px;
+    background: rgba(109, 20, 12, 0.9);
+    color: #fff9f4;
+  }
+
+  .product-status-badge {
+    right: 14px;
+    background: rgba(42, 36, 36, 0.82);
+    color: #fff9f4;
+  }
+
+  .product-status-badge.is-esgotado,
+  .modal-visual-status,
+  .color-status.is-esgotado {
+    background: var(--sold);
+    color: #fff9f4;
+  }
+
+  .product-status-badge.is-sob_encomenda,
+  .color-status.is-sob_encomenda {
+    background: var(--consult);
+    color: #2a2424;
   }
 
   .modal-overlay {
@@ -287,6 +344,7 @@
   }
 
   .modal-visual {
+    position: relative;
     padding: 28px;
     background:
       radial-gradient(circle at center, rgba(255, 255, 255, 0.84), rgba(244, 239, 232, 0.95) 70%),
@@ -301,6 +359,13 @@
     height: 100%;
     max-height: 72vh;
     object-fit: contain;
+  }
+
+  .modal-visual-status {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
   }
 
   .modal-thumbs {
@@ -335,7 +400,11 @@
     flex-direction: column;
   }
 
-  .modal-body .eyebrow {
+  .modal-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
     margin-bottom: 18px;
   }
 
@@ -343,6 +412,14 @@
     font-size: 52px;
     margin-bottom: 14px;
     font-weight: 300;
+  }
+
+  .modal-status-note {
+    margin-bottom: 22px;
+    color: var(--burgundy);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .modal-description {
@@ -435,6 +512,14 @@
     flex-shrink: 0;
   }
 
+  .color-status {
+    position: static;
+    min-height: 20px;
+    padding: 0 8px;
+    font-size: 9px;
+    margin-left: 2px;
+  }
+
   .whatsapp-btn {
     display: inline-flex;
     align-items: center;
@@ -455,6 +540,13 @@
   .whatsapp-btn:hover,
   .whatsapp-btn:focus-visible {
     background: var(--burgundy);
+  }
+
+  .whatsapp-btn.is-disabled {
+    background: #b8ada6;
+    color: rgba(255, 250, 245, 0.88);
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   .cta-section {
@@ -637,8 +729,8 @@
 <body>
 <header>
   <div class="container nav">
-    <nav class="nav-side" aria-label="Navegação principal">
-      <a class="nav-link" href="#catalogo">Catálogo</a>
+    <nav class="nav-side" aria-label="Navegacao principal">
+      <a class="nav-link" href="#catalogo">Catalogo</a>
       <a class="nav-link" href="#contato">Contato</a>
     </nav>
 
@@ -648,13 +740,7 @@
 
     <div class="nav-side right">
       <a class="nav-link" href="https://instagram.com/wvcouros">Instagram</a>
-      <a
-        class="nav-link"
-        id="navWhatsapp"
-        href="https://wa.me/5585997586148?text=Ol%C3%A1!%20Quero%20atendimento%20sobre%20as%20bolsas%20da%20VW%20Couros."
-        target="_blank"
-        rel="noopener noreferrer"
-      >WhatsApp</a>
+      <a class="nav-link" id="navWhatsapp" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
     </div>
   </div>
 </header>
@@ -662,18 +748,18 @@
 <main id="top">
   <section class="hero">
     <div class="container">
-      <div class="eyebrow">Coleção</div>
-      <h1>Bolsas em couro <br /><em>autêntico.</em></h1>
-      <p>Peças sofisticadas, com acabamento artesanal e tempo de vida pra acompanhar você por anos.</p>
-      <a class="hero-link" href="#catalogo">Ver coleção</a>
+      <div class="eyebrow">Colecao</div>
+      <h1>Bolsas em couro <br /><em>autentico.</em></h1>
+      <p>Pecas sofisticadas, com acabamento artesanal e tempo de vida para acompanhar voce por anos.</p>
+      <a class="hero-link" href="#catalogo">Ver colecao</a>
     </div>
   </section>
 
   <section class="catalog" id="catalogo">
     <div class="container">
       <div class="catalog-header">
-        <div class="eyebrow">Catálogo</div>
-        <h2>Nossas peças</h2>
+        <div class="eyebrow">Catalogo</div>
+        <h2>Nossas pecas</h2>
       </div>
 
       <div class="products-grid" id="productsGrid"></div>
@@ -685,10 +771,10 @@
       <div class="cta-card">
         <div>
           <div class="eyebrow">Atendimento</div>
-          <h2>Gostou de uma peça? A próxima etapa é uma conversa.</h2>
+          <h2>Gostou de uma peca? A proxima etapa e uma conversa.</h2>
           <p>
-            A cliente visualiza o catálogo, escolhe o modelo e segue para o WhatsApp com uma mensagem pronta.
-            Simples para quem compra e simples para você manter no ar.
+            A cliente visualiza o catalogo, escolhe o modelo e segue para o WhatsApp com uma mensagem pronta.
+            Simples para quem compra e simples para voce manter no ar.
           </p>
         </div>
 
@@ -696,7 +782,7 @@
           <a
             class="cta-button primary"
             id="ctaWhatsapp"
-            href="https://wa.me/5585997586148?text=Ol%C3%A1!%20Quero%20atendimento%20sobre%20as%20bolsas%20da%20VW%20Couros."
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -717,30 +803,35 @@
       <img src="assets/logo-circular.png" alt="VW Couros" />
       <div>
         <strong>VW Couros</strong>
-        <span>Couro autêntico, acabamento artesanal e presença elegante.</span>
+        <span>Couro autentico, acabamento artesanal e presenca elegante.</span>
       </div>
     </div>
 
-    <div class="footer-copy">© <span id="year"></span> VW Couros. Catálogo estático para divulgação.</div>
+    <div class="footer-copy">&copy; <span id="year"></span> VW Couros. Catalogo estatico para divulgacao.</div>
   </div>
 </footer>
 
 <div class="modal-overlay" id="modal" onclick="if (event.target === this) closeModal()">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
-    <button class="modal-close" type="button" aria-label="Fechar" onclick="closeModal()">×</button>
+    <button class="modal-close" type="button" aria-label="Fechar" onclick="closeModal()">x</button>
 
     <div class="modal-visual">
+      <span class="modal-visual-status" id="modalVisualStatus" hidden></span>
       <img id="modalImage" src="" alt="" />
       <div class="modal-thumbs" id="modalThumbs"></div>
     </div>
 
     <div class="modal-body">
-      <div class="eyebrow">VW Couros</div>
+      <div class="modal-header-meta">
+        <div class="eyebrow">VW Couros</div>
+        <span class="modal-badge" id="modalBadge" hidden></span>
+      </div>
       <h2 id="modalName"></h2>
+      <p class="modal-status-note" id="modalStatusNote" hidden></p>
       <p class="modal-description" id="modalDescription"></p>
 
       <div class="modal-price">
-        <strong>Valor à vista</strong>
+        <strong>Valor a vista</strong>
         <span id="modalPrice"></span>
       </div>
 
@@ -767,7 +858,7 @@
       <a
         class="whatsapp-btn"
         id="modalWhatsapp"
-        href="https://wa.me/5585997586148?text=Ol%C3%A1!%20Quero%20atendimento%20sobre%20as%20bolsas%20da%20VW%20Couros."
+        href="#"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -778,541 +869,8 @@
 </div>
 
 <script src="app-config.js"></script>
-<script src="produtos.js"></script>
-<script>
-  const WHATSAPP_NUMBER = "5585997586148";
-  const REMOTE_REFRESH_INTERVAL_MS = 30000;
-  const PRODUCTS_ENDPOINT =
-    window.VW_CONFIG && typeof window.VW_CONFIG.productsEndpoint === "string"
-      ? window.VW_CONFIG.productsEndpoint.trim()
-      : "";
-  const COLOR_MAP = {
-    preto: "#1a1a1a",
-    caramelo: "#aa5b2f",
-    whisky: "#b4652b",
-    bordô: "#6f1b1b",
-    bordo: "#6f1b1b",
-    café: "#4b3025",
-    cafe: "#4b3025",
-    tabaco: "#7b5535"
-  };
-
-  const LOCAL_PRODUCTS = normalizeProducts(Array.isArray(window.VW_PRODUCTS) ? window.VW_PRODUCTS : []);
-  let PRODUCTS = PRODUCTS_ENDPOINT ? [] : LOCAL_PRODUCTS;
-
-  const productsGrid = document.getElementById("productsGrid");
-  const navWhatsapp = document.getElementById("navWhatsapp");
-  const ctaWhatsapp = document.getElementById("ctaWhatsapp");
-  const modal = document.getElementById("modal");
-  const modalImage = document.getElementById("modalImage");
-  const modalThumbs = document.getElementById("modalThumbs");
-  const modalName = document.getElementById("modalName");
-  const modalDescription = document.getElementById("modalDescription");
-  const modalPrice = document.getElementById("modalPrice");
-  const modalColors = document.getElementById("modalColors");
-  const modalFeatures = document.getElementById("modalFeatures");
-  const modalPayment = document.getElementById("modalPayment");
-  const modalDelivery = document.getElementById("modalDelivery");
-  const modalWhatsapp = document.getElementById("modalWhatsapp");
-  const modalColorsSection = document.getElementById("modalColorsSection");
-
-  let currentProduct = null;
-  let currentColor = null;
-  let currentImage = null;
-  let remoteRefreshTimer = null;
-  let isRemoteLoading = false;
-
-  function showCatalogMessage(message) {
-    productsGrid.innerHTML =
-      '<p style="grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 14px;">' +
-      escapeHtml(message) +
-      "</p>";
-  }
-
-  function normalizeProducts(items) {
-    return (Array.isArray(items) ? items : [])
-      .map(function(item, index) {
-        if (!item || typeof item !== "object") {
-          return null;
-        }
-
-        const name = String(item.name || item.nome || "").trim();
-        if (!name) {
-          return null;
-        }
-
-        return {
-          id: String(item.id || slugify(name + "-" + index)).trim(),
-          name: name,
-          price: parsePrice(item.price != null ? item.price : item.preco),
-          image: String(item.image || item.imagem || "").trim(),
-          images: parseList(item.images != null ? item.images : item.imagens),
-          colorImages: parseColorImages(item.colorImages != null ? item.colorImages : item.variacoes),
-          description: String(item.description || item.descricao || "").trim(),
-          colors: parseList(item.colors != null ? item.colors : item.cores),
-          features: parseList(item.features != null ? item.features : item.detalhes),
-          payment: String(item.payment || item.pagamento || "A combinar pelo WhatsApp").trim(),
-          delivery: String(item.delivery || item.entrega || "Taxa de entrega a combinar pelo WhatsApp").trim()
-        };
-      })
-      .filter(Boolean);
-  }
-
-  function parseColorImages(value) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      const mapped = {};
-
-      Object.keys(value).forEach(function(key) {
-        const colorName = String(key).trim();
-        const imageUrl = String(value[key] || "").trim();
-        if (!colorName || !imageUrl) {
-          return;
-        }
-
-        mapped[colorName] = imageUrl;
-      });
-
-      return mapped;
-    }
-
-    const map = {};
-    const entries = parseList(value);
-
-    entries.forEach(function(entry) {
-      const parts = String(entry).split("::");
-      if (parts.length < 2) {
-        return;
-      }
-
-      const colorName = String(parts[0]).trim();
-      const imageUrl = parts.slice(1).join("::").trim();
-      if (!colorName || !imageUrl) {
-        return;
-      }
-
-      map[colorName] = imageUrl;
-    });
-
-    return map;
-  }
-
-  function parseList(value) {
-    if (Array.isArray(value)) {
-      return value.map(function(item) {
-        return String(item).trim();
-      }).filter(Boolean);
-    }
-
-    const text = String(value || "").trim();
-    if (!text) {
-      return [];
-    }
-
-    const separator = text.indexOf("|") >= 0 ? "|" : (text.indexOf("\n") >= 0 ? "\n" : ",");
-    return text.split(separator).map(function(item) {
-      return String(item).trim();
-    }).filter(Boolean);
-  }
-
-  function parsePrice(value) {
-    if (typeof value === "number") {
-      return value;
-    }
-
-    const normalized = String(value || "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .replace(/[^\d.-]/g, "");
-
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  function slugify(value) {
-    return String(value || "")
-      .trim()
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-
-  const DEFAULT_WHATSAPP_MESSAGE = "Olá! Quero atendimento sobre as bolsas da VW Couros.";
-
-  function buildDefaultWhatsappLink() {
-    return buildWhatsappUrl(DEFAULT_WHATSAPP_MESSAGE);
-  }
-
-  function buildWhatsappUrl(message) {
-    return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
-  }
-
-  function formatPrice(value) {
-    return Number(value).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    });
-  }
-
-  function colorHex(name) {
-    return COLOR_MAP[name.toLowerCase()] || "#b38d73";
-  }
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, function(char) {
-      return {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "\"": "&quot;",
-        "'": "&#39;"
-      }[char];
-    });
-  }
-
-  function buildWhatsappLink(product, color) {
-    const colorPart = color ? " na cor " + color : "";
-    const message =
-      "Olá! Tenho interesse na " +
-      product.name +
-      colorPart +
-      " (" +
-      formatPrice(product.price) +
-      "). Pode me passar mais informações?";
-
-    return buildWhatsappUrl(message);
-  }
-
-  function getPrimaryImage(product) {
-    if (product.image) {
-      return product.image;
-    }
-
-    if (product.images && product.images.length) {
-      return product.images[0];
-    }
-
-    if (product.colorImages) {
-      const firstColorImage = Object.values(product.colorImages)[0];
-      if (firstColorImage) {
-        return firstColorImage;
-      }
-    }
-
-    return "";
-  }
-
-  function getColorImage(product, color) {
-    if (!product || !product.colorImages || !color) {
-      return "";
-    }
-
-    return product.colorImages[color] || "";
-  }
-
-  function getGalleryImages(product) {
-    const list = [];
-    const seen = new Set();
-
-    function addImage(url) {
-      const value = String(url || "").trim();
-      if (!value || seen.has(value)) {
-        return;
-      }
-
-      seen.add(value);
-      list.push(value);
-    }
-
-    addImage(product.image);
-    (product.images || []).forEach(addImage);
-    Object.values(product.colorImages || {}).forEach(addImage);
-
-    return list;
-  }
-
-  function setModalImage(url, alt) {
-    currentImage = String(url || "").trim();
-    modalImage.src = currentImage;
-    modalImage.alt = alt || "";
-    renderModalThumbs();
-  }
-
-  function renderModalThumbs() {
-    if (!currentProduct) {
-      modalThumbs.innerHTML = "";
-      return;
-    }
-
-    const gallery = getGalleryImages(currentProduct);
-    if (gallery.length <= 1) {
-      modalThumbs.innerHTML = "";
-      return;
-    }
-
-    modalThumbs.innerHTML = gallery.map(function(url) {
-      const activeClass = url === currentImage ? "modal-thumb active" : "modal-thumb";
-      return (
-        '<button type="button" class="' +
-        activeClass +
-        '" data-thumb="' +
-        escapeHtml(url) +
-        '">' +
-        '<img src="' +
-        escapeHtml(url) +
-        '" alt="' +
-        escapeHtml(currentProduct.name) +
-        '" />' +
-        "</button>"
-      );
-    }).join("");
-
-    modalThumbs.querySelectorAll("[data-thumb]").forEach(function(button) {
-      button.addEventListener("click", function() {
-        setModalImage(button.getAttribute("data-thumb"), currentProduct.name);
-      });
-    });
-  }
-
-  function renderProducts() {
-    if (!PRODUCTS.length) {
-      showCatalogMessage("Nenhum produto disponível no momento.");
-      return;
-    }
-
-    productsGrid.innerHTML = PRODUCTS.map(function(product) {
-      return (
-        '<article class="product-card">' +
-        '<button type="button" data-product="' +
-        product.id +
-        '">' +
-        '<div class="product-image">' +
-        '<img src="' +
-        getPrimaryImage(product) +
-        '" alt="' +
-        escapeHtml(product.name) +
-        '" />' +
-        "</div>" +
-        '<h3 class="product-name">' +
-        escapeHtml(product.name) +
-        "</h3>" +
-        '<div class="product-price">' +
-        formatPrice(product.price) +
-        "</div>" +
-        "</button>" +
-        "</article>"
-      );
-    }).join("");
-
-    productsGrid.querySelectorAll("[data-product]").forEach(function(button) {
-      button.addEventListener("click", function() {
-        const product = PRODUCTS.find(function(item) {
-          return item.id === button.getAttribute("data-product");
-        });
-        openModal(product);
-      });
-    });
-  }
-
-  function renderModalColors(product) {
-    if (!product.colors || !product.colors.length) {
-      modalColorsSection.style.display = "none";
-      return;
-    }
-
-    modalColorsSection.style.display = "";
-    modalColors.innerHTML = product.colors.map(function(color) {
-      const activeClass = color === currentColor ? "color-option active" : "color-option";
-      return (
-        '<button type="button" class="' +
-        activeClass +
-        '" data-color="' +
-        escapeHtml(color) +
-        '">' +
-        '<span class="color-dot" style="background:' +
-        colorHex(color) +
-        '"></span>' +
-        "<span>" +
-        escapeHtml(color) +
-        "</span>" +
-        "</button>"
-      );
-    }).join("");
-
-    modalColors.querySelectorAll("[data-color]").forEach(function(button) {
-      button.addEventListener("click", function() {
-        currentColor = button.getAttribute("data-color");
-        const colorImage = getColorImage(product, currentColor);
-        if (colorImage) {
-          setModalImage(colorImage, product.name + " na cor " + currentColor);
-        }
-        renderModalColors(product);
-        modalWhatsapp.href = buildWhatsappLink(product, currentColor);
-      });
-    });
-  }
-
-  function openModal(product) {
-    if (!product) {
-      return;
-    }
-
-    currentProduct = product;
-    currentColor = product.colors && product.colors.length ? product.colors[0] : null;
-
-    const initialImage = getColorImage(product, currentColor) || getPrimaryImage(product);
-    setModalImage(initialImage, product.name);
-    modalName.textContent = product.name;
-    modalDescription.textContent = product.description;
-    modalPrice.textContent = formatPrice(product.price);
-    modalPayment.textContent = product.payment;
-    modalDelivery.textContent = product.delivery;
-    modalWhatsapp.href = buildWhatsappLink(product, currentColor);
-    modalFeatures.innerHTML = product.features.map(function(feature) {
-      return "<li>" + escapeHtml(feature) + "</li>";
-    }).join("");
-
-    renderModalColors(product);
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden";
-  }
-
-  window.closeModal = function() {
-    modal.classList.remove("active");
-    document.body.style.overflow = "";
-    currentProduct = null;
-    currentColor = null;
-    currentImage = null;
-  };
-
-  document.addEventListener("keydown", function(event) {
-    if (event.key === "Escape" && modal.classList.contains("active")) {
-      closeModal();
-    }
-  });
-
-  function applyRemoteProducts(payload) {
-    const remoteList = Array.isArray(payload)
-      ? payload
-      : (payload && Array.isArray(payload.products) ? payload.products : []);
-
-    const normalized = normalizeProducts(remoteList);
-    if (!normalized.length) {
-      return false;
-    }
-
-    PRODUCTS = normalized;
-    renderProducts();
-
-    if (currentProduct) {
-      const updatedProduct = PRODUCTS.find(function(item) {
-        return item.id === currentProduct.id;
-      });
-
-      if (updatedProduct) {
-        openModal(updatedProduct);
-      }
-    }
-
-    return true;
-  }
-
-  function applyFallbackProducts() {
-    PRODUCTS = LOCAL_PRODUCTS;
-    renderProducts();
-  }
-
-  function cleanupRemoteLoader(script, callbackName) {
-    if (script && script.parentNode) {
-      script.parentNode.removeChild(script);
-    }
-
-    try {
-      delete window[callbackName];
-    } catch (error) {
-      window[callbackName] = undefined;
-    }
-  }
-
-  function loadRemoteProducts() {
-    if (!PRODUCTS_ENDPOINT) {
-      applyFallbackProducts();
-      return;
-    }
-
-    if (isRemoteLoading) {
-      return;
-    }
-
-    isRemoteLoading = true;
-    const callbackName = "__vwProductsCallback_" + Date.now();
-    const script = document.createElement("script");
-    const separator = PRODUCTS_ENDPOINT.indexOf("?") >= 0 ? "&" : "?";
-    let fallbackApplied = false;
-    const timeoutId = window.setTimeout(function() {
-      if (fallbackApplied) {
-        return;
-      }
-
-      fallbackApplied = true;
-      isRemoteLoading = false;
-      applyFallbackProducts();
-    }, 4000);
-
-    window[callbackName] = function(payload) {
-      window.clearTimeout(timeoutId);
-      isRemoteLoading = false;
-      const applied = applyRemoteProducts(payload);
-      cleanupRemoteLoader(script, callbackName);
-
-      if (!applied) {
-        applyFallbackProducts();
-      }
-    };
-
-    script.onerror = function() {
-      if (fallbackApplied) {
-        return;
-      }
-
-      fallbackApplied = true;
-      window.clearTimeout(timeoutId);
-      isRemoteLoading = false;
-      cleanupRemoteLoader(script, callbackName);
-      applyFallbackProducts();
-    };
-
-    script.src = PRODUCTS_ENDPOINT + separator + "callback=" + callbackName + "&ts=" + Date.now();
-    document.head.appendChild(script);
-  }
-
-  function startRemoteAutoRefresh() {
-    if (!PRODUCTS_ENDPOINT || remoteRefreshTimer) {
-      return;
-    }
-
-    remoteRefreshTimer = window.setInterval(function() {
-      loadRemoteProducts();
-    }, REMOTE_REFRESH_INTERVAL_MS);
-  }
-
-  document.getElementById("year").textContent = new Date().getFullYear();
-  navWhatsapp.href = buildDefaultWhatsappLink();
-  ctaWhatsapp.href = buildDefaultWhatsappLink();
-  if (PRODUCTS_ENDPOINT) {
-    showCatalogMessage("Carregando catálogo...");
-  } else {
-    renderProducts();
-  }
-  loadRemoteProducts();
-  startRemoteAutoRefresh();
-
-  document.addEventListener("visibilitychange", function() {
-    if (!document.hidden) {
-      loadRemoteProducts();
-    }
-  });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="catalog-app.js"></script>
 </body>
 </html>

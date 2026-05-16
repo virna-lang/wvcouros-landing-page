@@ -481,6 +481,87 @@
     line-height: 1.6;
   }
 
+  .extras-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .extra-item {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.94);
+    aspect-ratio: 1;
+  }
+
+  .extra-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .extra-item.is-pending {
+    border-style: dashed;
+    border-color: rgba(200, 149, 8, 0.55);
+  }
+
+  .extra-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(43, 23, 18, 0.78);
+    color: #fffaf5;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(43, 23, 18, 0.2);
+  }
+
+  .extra-remove:hover,
+  .extra-remove:focus-visible {
+    background: var(--danger);
+  }
+
+  .extra-pending-tag {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--burgundy);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .extras-empty {
+    grid-column: 1 / -1;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px dashed rgba(109, 63, 41, 0.22);
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.88rem;
+  }
+
+  .extras-hint {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
   @media (max-width: 1100px) {
     .workspace-grid,
     .summary-grid,
@@ -520,12 +601,12 @@
         <img src="assets/logo-circular.png" alt="VW Couros" />
         <div>
           <strong>VW Couros</strong>
-          <span>Painel privado de catalogo e estoque</span>
+          <span>Painel privado de catálogo e estoque</span>
         </div>
       </div>
 
       <div class="topbar-actions">
-        <a class="ghost-link" href="index.html">Ver catalogo</a>
+        <a class="ghost-link" href="index.html">Ver catálogo</a>
         <button class="button-light hidden" id="logoutButton" type="button">Sair</button>
       </div>
     </header>
@@ -533,9 +614,9 @@
     <div class="auth-wrap" id="authWrap">
       <main class="auth-card">
         <span class="badge">Painel privado</span>
-        <h1>Entre para editar o catalogo.</h1>
+        <h1>Entre para editar o catálogo.</h1>
         <p>
-          Este acesso e reservado para usuarios autorizados no Supabase Auth e liberados na tabela
+          Este acesso é reservado para usuários autorizados no Supabase Auth e liberados na tabela
           <code>panel_users</code>.
         </p>
 
@@ -566,8 +647,8 @@
       <section class="panel settings-panel">
         <div class="section-header">
           <div>
-            <h2>Configuracoes do site</h2>
-            <p>WhatsApp, pagamento e entrega globais do catalogo publico.</p>
+            <h2>Configurações do site</h2>
+            <p>WhatsApp, pagamento e entrega globais do catálogo público.</p>
           </div>
         </div>
 
@@ -590,7 +671,7 @@
           </div>
 
           <div class="toolbar">
-            <button class="button" type="submit">Salvar configuracoes</button>
+            <button class="button" type="submit">Salvar configurações</button>
           </div>
         </form>
         <div class="message" id="settingsMessage"></div>
@@ -622,7 +703,7 @@
             <div class="section-header">
               <div>
                 <h3>Produto</h3>
-                <p>Dados principais da bolsa, destaque e ordem de exibicao.</p>
+                <p>Dados principais da bolsa, destaque e ordem de exibição.</p>
               </div>
 
               <div class="toolbar">
@@ -650,7 +731,7 @@
 
               <div class="field-grid three">
                 <div class="field">
-                  <label for="productPrice">Preco</label>
+                  <label for="productPrice">Preço</label>
                   <input id="productPrice" name="price" type="number" step="0.01" min="0" required />
                 </div>
 
@@ -679,17 +760,17 @@
 
                 <div class="field">
                   <label for="productMaterial">Material</label>
-                  <input id="productMaterial" name="material" type="text" placeholder="Couro legitimo" />
+                  <input id="productMaterial" name="material" type="text" placeholder="Couro legítimo" />
                 </div>
 
                 <div class="field">
-                  <label for="productDimensions">Dimensoes</label>
+                  <label for="productDimensions">Dimensões</label>
                   <input id="productDimensions" name="dimensions" type="text" placeholder="28 x 18 x 9 cm" />
                 </div>
               </div>
 
               <div class="field">
-                <label for="productDescription">Descricao</label>
+                <label for="productDescription">Descrição</label>
                 <textarea id="productDescription" name="description" placeholder="Resumo comercial da bolsa"></textarea>
               </div>
 
@@ -709,7 +790,7 @@
             <div class="section-header">
               <div>
                 <h3>Cores e estoque</h3>
-                <p>Cada cor pode ter status, quantidade, ordem e imagem principal proprios. A foto principal da cor fica so aqui.</p>
+                <p>Cada cor pode ter status, quantidade, ordem e imagem principal próprios. A foto principal da cor fica só aqui.</p>
               </div>
 
               <div class="toolbar">
@@ -726,7 +807,7 @@
             <div class="section-header">
               <div>
                 <h3>Galeria de imagens</h3>
-                <p>Envie apenas imagens extras. Nao use esta area para a foto principal da cor.</p>
+                <p>Envie apenas imagens extras. Não use esta área para a foto principal da cor.</p>
               </div>
             </div>
 
@@ -746,7 +827,7 @@
 
                 <div class="field">
                   <label for="galleryAlt">Texto alternativo</label>
-                  <input id="galleryAlt" name="alt" type="text" placeholder="Descricao curta da imagem" />
+                  <input id="galleryAlt" name="alt" type="text" placeholder="Descrição curta da imagem" />
                 </div>
               </div>
 

@@ -486,11 +486,24 @@
     gap: 12px;
   }
 
+  .modal-visual-frame {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    touch-action: pan-y;
+  }
+
   .modal-visual img {
     width: 100%;
     height: 100%;
     max-height: 72vh;
     object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
   .modal-visual-status {
@@ -498,6 +511,65 @@
     top: 18px;
     right: 18px;
     z-index: 2;
+  }
+
+  .modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(42, 36, 36, 0.16);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .modal-nav:hover,
+  .modal-nav:focus-visible {
+    background: var(--burgundy);
+    color: var(--white);
+    transform: translateY(-50%) scale(1.04);
+  }
+
+  .modal-nav.prev {
+    left: 14px;
+  }
+
+  .modal-nav.next {
+    right: 14px;
+  }
+
+  .modal-nav[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 540px) {
+    .modal-nav {
+      width: 38px;
+      height: 38px;
+      font-size: 14px;
+    }
+
+    .modal-nav.prev {
+      left: 8px;
+    }
+
+    .modal-nav.next {
+      right: 8px;
+    }
   }
 
   .modal-thumbs {
@@ -947,7 +1019,7 @@
   <section class="catalog" id="catalogo">
     <div class="container">
       <div class="catalog-header">
-        <div class="eyebrow">Catalogo</div>
+        <div class="eyebrow">Catálogo</div>
         <h2>Nossas peças</h2>
       </div>
 
@@ -1006,7 +1078,15 @@
 
     <div class="modal-visual">
       <span class="modal-visual-status" id="modalVisualStatus" hidden></span>
-      <img id="modalImage" src="" alt="" />
+      <div class="modal-visual-frame" id="modalVisualFrame">
+        <button class="modal-nav prev" type="button" id="modalPrev" aria-label="Foto anterior" hidden>
+          <span aria-hidden="true">&#10094;</span>
+        </button>
+        <img id="modalImage" src="" alt="" />
+        <button class="modal-nav next" type="button" id="modalNext" aria-label="Próxima foto" hidden>
+          <span aria-hidden="true">&#10095;</span>
+        </button>
+      </div>
       <div class="modal-thumbs" id="modalThumbs"></div>
     </div>
 
@@ -1020,7 +1100,7 @@
       <p class="modal-description" id="modalDescription"></p>
 
       <div class="modal-price">
-        <strong>Valor a vista</strong>
+        <strong>Valor à vista</strong>
         <span id="modalPrice"></span>
       </div>
 

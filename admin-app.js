@@ -125,7 +125,7 @@
       ativo: "Ativo",
       inativo: "Inativo",
       arquivado: "Arquivado",
-      disponivel: "Disponivel",
+      disponivel: "Disponível",
       esgotado: "Esgotado",
       sob_encomenda: "Sob encomenda"
     }[status] || status;
@@ -326,11 +326,20 @@
     const wrapper = document.createElement("article");
     wrapper.className = "color-row";
     wrapper.dataset.colorId = color.id || "";
+
+    // Estado de uploads/remocoes pendentes desta cor
+    wrapper._pendingExtras = [];
+    wrapper._removedExtraIds = [];
+
+    const existingExtras = (color.images || []).filter(function(image) {
+      return !image.is_primary;
+    });
+
     wrapper.innerHTML =
       '<div class="color-row-top">' +
       "<div>" +
       "<strong>" + escapeHtml(color.name || "Nova cor") + "</strong>" +
-      '<p style="color: var(--muted); margin-top: 4px;">Configure estoque, status e imagem principal desta cor.</p>' +
+      '<p style="color: var(--muted); margin-top: 4px;">Configure estoque, status e imagens desta cor.</p>' +
       "</div>" +
       '<div class="inline-actions">' +
       '<button class="button-light" type="button" data-role="remove-color">Remover</button>' +
@@ -354,7 +363,7 @@
       '<div class="field">' +
       '<label>Status</label>' +
       '<select data-field="status">' +
-      '<option value="disponivel">Disponivel</option>' +
+      '<option value="disponivel">Disponível</option>' +
       '<option value="esgotado">Esgotado</option>' +
       '<option value="sob_encomenda">Sob encomenda</option>' +
       "</select>" +
@@ -382,6 +391,12 @@
       (color.primaryImageUrl ? '<span class="pill">Imagem vinculada</span>' : '<span class="pill">Sem imagem</span>') +
       "</div>" +
       "</div>" +
+      "</div>" +
+      '<div class="field" style="margin-top: 6px;">' +
+      '<label>Outros ângulos desta cor</label>' +
+      '<div class="extras-grid" data-role="extras-grid"></div>' +
+      '<input type="file" data-field="extraFiles" accept="image/*" multiple />' +
+      '<p class="extras-hint">Adicione mais fotos da bolsa nesta cor (outros ângulos, detalhes). As setas no catálogo passarão por todas elas.</p>' +
       "</div>";
 
     wrapper.querySelector('[data-field="status"]').value = color.status || "disponivel";
@@ -400,6 +415,79 @@
         slugInput.value = slugify(event.target.value);
       }
     });
+
+    function renderExtras() {
+      const grid = wrapper.querySelector('[data-role="extras-grid"]');
+      if (!grid) {
+        return;
+      }
+
+      const savedHtml = existingExtras
+        .filter(function(image) {
+          return wrapper._removedExtraIds.indexOf(image.id) < 0;
+        })
+        .map(function(image) {
+          const url = image.public_url || image.publicUrl || "";
+          return (
+            '<div class="extra-item" data-image-id="' + escapeHtml(image.id) + '">' +
+            '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(image.alt_text || "Ângulo") + '" />' +
+            '<button type="button" class="extra-remove" data-role="remove-saved-extra" data-image-id="' + escapeHtml(image.id) + '" aria-label="Remover esta foto">x</button>' +
+            "</div>"
+          );
+        });
+
+      const pendingHtml = wrapper._pendingExtras.map(function(item, index) {
+        return (
+          '<div class="extra-item is-pending" data-pending-index="' + index + '">' +
+          '<img src="' + escapeHtml(item.previewUrl) + '" alt="Pré-visualização" />' +
+          '<button type="button" class="extra-remove" data-role="remove-pending-extra" data-pending-index="' + index + '" aria-label="Remover esta foto">x</button>' +
+          '<span class="extra-pending-tag">Nova</span>' +
+          "</div>"
+        );
+      });
+
+      const items = savedHtml.concat(pendingHtml);
+      grid.innerHTML = items.length
+        ? items.join("")
+        : '<div class="extras-empty">Nenhum ângulo extra ainda. Adicione fotos abaixo.</div>';
+
+      grid.querySelectorAll('[data-role="remove-saved-extra"]').forEach(function(button) {
+        button.addEventListener("click", function() {
+          const imageId = button.getAttribute("data-image-id");
+          if (imageId) {
+            wrapper._removedExtraIds.push(imageId);
+            renderExtras();
+          }
+        });
+      });
+
+      grid.querySelectorAll('[data-role="remove-pending-extra"]').forEach(function(button) {
+        button.addEventListener("click", function() {
+          const idx = Number(button.getAttribute("data-pending-index"));
+          if (Number.isFinite(idx)) {
+            const removed = wrapper._pendingExtras.splice(idx, 1)[0];
+            if (removed && removed.previewUrl) {
+              try { URL.revokeObjectURL(removed.previewUrl); } catch (_) { /* noop */ }
+            }
+            renderExtras();
+          }
+        });
+      });
+    }
+
+    wrapper.querySelector('[data-field="extraFiles"]').addEventListener("change", function(event) {
+      const files = Array.from(event.target.files || []);
+      files.forEach(function(file) {
+        wrapper._pendingExtras.push({
+          file: file,
+          previewUrl: URL.createObjectURL(file)
+        });
+      });
+      event.target.value = "";
+      renderExtras();
+    });
+
+    renderExtras();
 
     return wrapper;
   }
@@ -545,11 +633,76 @@
         status: row.querySelector('[data-field="status"]').value,
         stockQuantity: row.querySelector('[data-field="stockQuantity"]').value.trim(),
         sortOrder: Number(row.querySelector('[data-field="sortOrder"]').value || index) || index,
-        imageFile: row.querySelector('[data-field="imageFile"]').files[0] || null
+        imageFile: row.querySelector('[data-field="imageFile"]').files[0] || null,
+        pendingExtras: (row._pendingExtras || []).map(function(item) { return item.file; }),
+        removedExtraIds: (row._removedExtraIds || []).slice()
       };
     }).filter(function(color) {
       return color.name;
     });
+  }
+
+  async function deleteColorExtras(imageIds) {
+    if (!imageIds || !imageIds.length) {
+      return;
+    }
+
+    const fetchResult = await state.client.from("product_images")
+      .select("id, storage_path")
+      .in("id", imageIds);
+
+    if (fetchResult.error) {
+      throw fetchResult.error;
+    }
+
+    const deleteResult = await state.client.from("product_images")
+      .delete()
+      .in("id", imageIds);
+
+    if (deleteResult.error) {
+      throw deleteResult.error;
+    }
+
+    const paths = (fetchResult.data || []).map(function(row) {
+      return row.storage_path;
+    }).filter(Boolean);
+
+    if (paths.length) {
+      const bucket = supabaseUtils.getSupabaseConfig().bucket;
+      await state.client.storage.from(bucket).remove(paths);
+    }
+  }
+
+  async function uploadColorExtras(productId, colorId, files, colorName) {
+    if (!files || !files.length) {
+      return;
+    }
+
+    const countResult = await state.client.from("product_images")
+      .select("id", { count: "exact", head: true })
+      .eq("product_color_id", colorId)
+      .eq("is_primary", false);
+
+    let startOrder = countResult && typeof countResult.count === "number" ? countResult.count : 0;
+
+    for (let i = 0; i < files.length; i += 1) {
+      const file = files[i];
+      const scope = "colors/" + colorId + "/gallery";
+      const uploadInfo = await uploadFile(file, buildUploadPath(productId, scope, file.name));
+      const insertResult = await state.client.from("product_images").insert({
+        product_id: productId,
+        product_color_id: colorId,
+        storage_path: uploadInfo.storagePath,
+        public_url: uploadInfo.publicUrl,
+        alt_text: colorName ? "Ângulo extra da cor " + colorName : "",
+        is_primary: false,
+        sort_order: startOrder + i
+      });
+
+      if (insertResult.error) {
+        throw insertResult.error;
+      }
+    }
   }
 
   function buildUploadPath(productId, scope, fileName) {
@@ -673,7 +826,7 @@
         const targetSlug = targetColorValue.slice(5);
         targetColorId = colorIdBySlug && colorIdBySlug[targetSlug] ? colorIdBySlug[targetSlug] : null;
         if (!targetColorId) {
-          throw new Error("A cor vinculada a esta galeria ainda nao foi salva. Salve a cor e tente novamente.");
+          throw new Error("A cor vinculada a esta galeria ainda não foi salva. Salve a cor e tente novamente.");
         }
       } else {
         targetColorId = targetColorValue;
@@ -807,6 +960,14 @@
       if (color.imageFile) {
         await saveColorPrimaryImage(productId, colorId, color.imageFile, color.name);
       }
+
+      if (color.removedExtraIds && color.removedExtraIds.length) {
+        await deleteColorExtras(color.removedExtraIds);
+      }
+
+      if (color.pendingExtras && color.pendingExtras.length) {
+        await uploadColorExtras(productId, colorId, color.pendingExtras, color.name);
+      }
     }
 
     return colorIdBySlug;
@@ -833,13 +994,13 @@
     }
 
     try {
-      showMessage(els.productMessage, "Salvando alteracoes do produto...", "info");
+      showMessage(els.productMessage, "Salvando alterações do produto...", "info");
       await saveEditorState();
-      showMessage(els.productMessage, "Alteracoes salvas com sucesso.", "success");
+      showMessage(els.productMessage, "Alterações salvas com sucesso.", "success");
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.productMessage, normalizeError(error, "Nao foi possivel salvar o produto."), "error");
+      showMessage(els.productMessage, normalizeError(error, "Não foi possível salvar o produto."), "error");
     }
   }
 
@@ -850,13 +1011,13 @@
     }
 
     try {
-      showMessage(els.colorsMessage, "Salvando cores, imagem principal e pendencias da galeria...", "info");
+      showMessage(els.colorsMessage, "Salvando cores, imagem principal e pendências da galeria...", "info");
       await saveEditorState();
       showMessage(els.colorsMessage, "Cores e imagens salvas com sucesso.", "success");
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.colorsMessage, normalizeError(error, "Nao foi possivel salvar cores e imagem principal."), "error");
+      showMessage(els.colorsMessage, normalizeError(error, "Não foi possível salvar cores e imagem principal."), "error");
     }
   }
 
@@ -864,7 +1025,7 @@
     event.preventDefault();
 
     try {
-      showMessage(els.settingsMessage, "Salvando configuracoes...", "info");
+      showMessage(els.settingsMessage, "Salvando configurações...", "info");
       const payload = {
         id: true,
         whatsapp_number: forms.settingsWhatsapp.value.trim(),
@@ -878,11 +1039,11 @@
         throw result.error;
       }
 
-      showMessage(els.settingsMessage, "Configuracoes salvas.", "success");
+      showMessage(els.settingsMessage, "Configurações salvas.", "success");
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.settingsMessage, normalizeError(error, "Nao foi possivel salvar as configuracoes."), "error");
+      showMessage(els.settingsMessage, normalizeError(error, "Não foi possível salvar as configurações."), "error");
     }
   }
 
@@ -893,7 +1054,7 @@
       return;
     }
 
-    if (!window.confirm("Arquivar este produto? Ele saira do catalogo publico e continuara salvo no painel.")) {
+    if (!window.confirm("Arquivar este produto? Ele sairá do catálogo público e continuará salvo no painel.")) {
       return;
     }
 
@@ -913,7 +1074,7 @@
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.productMessage, normalizeError(error, "Nao foi possivel arquivar o produto."), "error");
+      showMessage(els.productMessage, normalizeError(error, "Não foi possível arquivar o produto."), "error");
     }
   }
 
@@ -949,7 +1110,7 @@
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.galleryMessage, normalizeError(error, "Nao foi possivel enviar as imagens."), "error");
+      showMessage(els.galleryMessage, normalizeError(error, "Não foi possível enviar as imagens."), "error");
     }
   }
 
@@ -1012,7 +1173,7 @@
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.galleryMessage, normalizeError(error, "Nao foi possivel definir a imagem principal."), "error");
+      showMessage(els.galleryMessage, normalizeError(error, "Não foi possível definir a imagem principal."), "error");
     }
   }
 
@@ -1037,11 +1198,11 @@
         await state.client.storage.from(bucket).remove([image.storage_path]);
       }
 
-      showMessage(els.galleryMessage, "Imagem excluida.", "success");
+      showMessage(els.galleryMessage, "Imagem excluída.", "success");
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.galleryMessage, normalizeError(error, "Nao foi possivel excluir a imagem."), "error");
+      showMessage(els.galleryMessage, normalizeError(error, "Não foi possível excluir a imagem."), "error");
     }
   }
 
@@ -1097,7 +1258,7 @@
       }
 
       if (!panelUserResult.data || panelUserResult.data.is_active !== true) {
-        throw new Error("Este usuario nao esta liberado para editar o painel. Entre com o usuario autorizado em panel_users.");
+        throw new Error("Este usuário não está liberado para editar o painel. Entre com o usuário autorizado em panel_users.");
       }
 
       const [
@@ -1154,7 +1315,7 @@
       renderEditor();
     } catch (error) {
       console.error(error);
-      showMessage(els.authMessage, normalizeError(error, "Nao foi possivel carregar o painel. Verifique se este usuario esta liberado em panel_users."), "error");
+      showMessage(els.authMessage, normalizeError(error, "Não foi possível carregar o painel. Verifique se este usuário está liberado em panel_users."), "error");
       setAuthView(false);
     }
   }
@@ -1215,7 +1376,7 @@
       await loadDashboardData();
     } catch (error) {
       console.error(error);
-      showMessage(els.authMessage, normalizeError(error, "Nao foi possivel entrar."), "error");
+      showMessage(els.authMessage, normalizeError(error, "Não foi possível entrar."), "error");
     } finally {
       els.loginButton.disabled = false;
     }

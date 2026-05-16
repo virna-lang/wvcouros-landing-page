@@ -8,15 +8,15 @@
   const DEFAULT_PAYMENT_TEXT = "A combinar pelo WhatsApp";
   const DEFAULT_DELIVERY_TEXT = "Taxa de entrega a combinar pelo WhatsApp";
   const DEFAULT_STATUS_LABELS = {
-    disponivel: "Disponivel",
+    disponivel: "Disponível",
     esgotado: "Esgotado",
     sob_encomenda: "Sob consulta"
   };
   const DEFAULT_BADGE_LABELS = {
-    lancamento: "Lancamento",
+    lancamento: "Lançamento",
     mais_vendida: "Mais vendida",
-    edicao_limitada: "Edicao limitada",
-    promocao: "Promocao"
+    edicao_limitada: "Edição limitada",
+    promocao: "Promoção"
   };
   const COLOR_MAP = {
     preto: "#1a1a1a",
@@ -33,6 +33,9 @@
   const modal = document.getElementById("modal");
   const modalImage = document.getElementById("modalImage");
   const modalThumbs = document.getElementById("modalThumbs");
+  const modalPrev = document.getElementById("modalPrev");
+  const modalNext = document.getElementById("modalNext");
+  const modalVisualFrame = document.getElementById("modalVisualFrame");
   const modalName = document.getElementById("modalName");
   const modalDescription = document.getElementById("modalDescription");
   const modalPrice = document.getElementById("modalPrice");
@@ -56,6 +59,7 @@
   let currentProduct = null;
   let currentColorId = null;
   let currentImage = null;
+  let currentGallery = [];
   let remoteRefreshTimer = null;
   let isRemoteLoading = false;
 
@@ -138,7 +142,7 @@
   }
 
   function buildDefaultWhatsappLink() {
-    return buildWhatsappUrl("Ola! Quero atendimento sobre as bolsas da VW Couros.");
+    return buildWhatsappUrl("Olá! Quero atendimento sobre as bolsas da VW Couros.");
   }
 
   function currentWhatsappNumber() {
@@ -158,14 +162,14 @@
     const colorPart = colorRecord ? " na cor " + colorRecord.name : "";
     const isConsultation = colorRecord && colorRecord.status !== "disponivel";
     const message = isConsultation
-      ? "Ola! Quero consultar a disponibilidade da " + product.name + colorPart + "."
-      : "Ola! Tenho interesse na " + product.name + colorPart + " (" + formatPrice(product.price) + "). Pode me passar mais informacoes?";
+      ? "Olá! Quero consultar a disponibilidade da " + product.name + colorPart + "."
+      : "Olá! Tenho interesse na " + product.name + colorPart + " (" + formatPrice(product.price) + "). Pode me passar mais informações?";
 
     return buildWhatsappUrl(message);
   }
 
   function statusLabel(code) {
-    return DEFAULT_STATUS_LABELS[code] || "Disponivel";
+    return DEFAULT_STATUS_LABELS[code] || "Disponível";
   }
 
   function badgeLabel(code) {
@@ -224,9 +228,16 @@
     }
 
     add(getPrimaryImage(product, colorRecord));
-    (Array.isArray(product.images) ? product.images : []).forEach(add);
+
     if (colorRecord) {
       (Array.isArray(colorRecord.images) ? colorRecord.images : []).forEach(add);
+
+      // Se a cor ainda nao tiver galeria propria suficiente, aproveita a galeria geral como apoio.
+      if (list.length <= 1) {
+        (Array.isArray(product.images) ? product.images : []).forEach(add);
+      }
+    } else {
+      (Array.isArray(product.images) ? product.images : []).forEach(add);
     }
 
     return list;
@@ -243,23 +254,65 @@
     currentImage = String(url || "").trim();
     modalImage.src = currentImage;
     modalImage.alt = alt || "";
-    renderModalThumbs();
+    refreshGalleryControls();
   }
 
-  function renderModalThumbs() {
+  function refreshGalleryControls() {
     if (!currentProduct) {
+      currentGallery = [];
       modalThumbs.innerHTML = "";
+      updateNavButtons();
       return;
     }
 
     const colorRecord = getColorById(currentProduct, currentColorId) || getDefaultColor(currentProduct);
-    const gallery = getGalleryImages(currentProduct, colorRecord);
-    if (gallery.length <= 1) {
+    currentGallery = getGalleryImages(currentProduct, colorRecord);
+    if (currentGallery.length && currentGallery.indexOf(currentImage) < 0) {
+      currentImage = currentGallery[0];
+      modalImage.src = currentImage;
+      modalImage.alt = currentProduct ? currentProduct.name : "";
+    }
+    if (!currentGallery.length) {
+      currentImage = "";
+      modalImage.src = "";
+      modalImage.alt = "";
+    }
+    renderModalThumbs();
+    updateNavButtons();
+  }
+
+  function updateNavButtons() {
+    const hasMultiple = currentGallery.length > 1;
+    if (modalPrev) {
+      modalPrev.hidden = !hasMultiple;
+    }
+    if (modalNext) {
+      modalNext.hidden = !hasMultiple;
+    }
+  }
+
+  function goToGalleryDelta(delta) {
+    if (!currentGallery.length) {
+      return;
+    }
+
+    const currentIndex = currentGallery.indexOf(currentImage);
+    const baseIndex = currentIndex >= 0 ? currentIndex : 0;
+    const nextIndex = (baseIndex + delta + currentGallery.length) % currentGallery.length;
+    const nextUrl = currentGallery[nextIndex];
+    const altLabel = currentProduct
+      ? currentProduct.name + " (foto " + (nextIndex + 1) + " de " + currentGallery.length + ")"
+      : "";
+    setModalImage(nextUrl, altLabel);
+  }
+
+  function renderModalThumbs() {
+    if (!currentProduct || currentGallery.length <= 1) {
       modalThumbs.innerHTML = "";
       return;
     }
 
-    modalThumbs.innerHTML = gallery.map(function(url) {
+    modalThumbs.innerHTML = currentGallery.map(function(url) {
       const activeClass = url === currentImage ? "modal-thumb active" : "modal-thumb";
       return (
         '<button type="button" class="' +
@@ -285,7 +338,7 @@
 
   function renderProducts() {
     if (!products.length) {
-      showCatalogMessage("Nenhum produto disponivel no momento.");
+      showCatalogMessage("Nenhum produto disponível no momento.");
       return;
     }
 
@@ -364,10 +417,10 @@
 
     if (currentStatus === "esgotado") {
       modalStatusNote.hidden = false;
-      modalStatusNote.textContent = "Esta cor continua visivel no catalogo, mas esta indisponivel no momento.";
+      modalStatusNote.textContent = "Esta cor continua visível no catálogo, mas está indisponível no momento.";
     } else if (currentStatus === "sob_encomenda") {
       modalStatusNote.hidden = false;
-      modalStatusNote.textContent = "Esta cor esta disponivel sob consulta.";
+      modalStatusNote.textContent = "Esta cor está disponível sob consulta.";
     } else {
       modalStatusNote.hidden = true;
       modalStatusNote.textContent = "";
@@ -403,9 +456,7 @@
         currentColorId = button.getAttribute("data-color-id");
         const colorRecord = getColorById(product, currentColorId);
         const colorImage = getPrimaryImage(product, colorRecord);
-        if (colorImage) {
-          setModalImage(colorImage, product.name + " na cor " + colorRecord.name);
-        }
+        setModalImage(colorImage, product.name + " na cor " + colorRecord.name);
         renderModalColors(product);
         renderCurrentStatus(product, colorRecord);
       });
@@ -438,19 +489,84 @@
     document.body.style.overflow = "hidden";
   }
 
-  window.closeModal = function() {
+  function closeModal() {
     modal.classList.remove("active");
     document.body.style.overflow = "";
     currentProduct = null;
     currentColorId = null;
     currentImage = null;
-  };
+    currentGallery = [];
+    modalImage.src = "";
+    modalImage.alt = "";
+    modalThumbs.innerHTML = "";
+    updateNavButtons();
+  }
+
+  window.closeModal = closeModal;
 
   document.addEventListener("keydown", function(event) {
-    if (event.key === "Escape" && modal.classList.contains("active")) {
+    if (!modal.classList.contains("active")) {
+      return;
+    }
+
+    if (event.key === "Escape") {
       closeModal();
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      goToGalleryDelta(-1);
+    } else if (event.key === "ArrowRight") {
+      goToGalleryDelta(1);
     }
   });
+
+  if (modalPrev) {
+    modalPrev.addEventListener("click", function() {
+      goToGalleryDelta(-1);
+    });
+  }
+
+  if (modalNext) {
+    modalNext.addEventListener("click", function() {
+      goToGalleryDelta(1);
+    });
+  }
+
+  if (modalVisualFrame) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let trackingTouch = false;
+
+    modalVisualFrame.addEventListener("touchstart", function(event) {
+      if (!event.touches || event.touches.length !== 1) {
+        trackingTouch = false;
+        return;
+      }
+      trackingTouch = true;
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+    }, { passive: true });
+
+    modalVisualFrame.addEventListener("touchend", function(event) {
+      if (!trackingTouch) {
+        return;
+      }
+      trackingTouch = false;
+
+      const touch = (event.changedTouches && event.changedTouches[0]) || null;
+      if (!touch) {
+        return;
+      }
+
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+
+      if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        goToGalleryDelta(deltaX > 0 ? -1 : 1);
+      }
+    });
+  }
 
   function applySupabaseData(result) {
     if (!result || !Array.isArray(result.products) || !result.products.length) {
@@ -490,12 +606,12 @@
     };
     badgeLabels = Object.assign({}, DEFAULT_BADGE_LABELS);
     refreshGlobalWhatsappLinks();
-    showCatalogMessage("Nao foi possivel carregar o catalogo agora. Tente novamente em instantes.");
+    showCatalogMessage("Não foi possível carregar o catálogo agora. Tente novamente em instantes.");
   }
 
   async function loadSupabaseProducts() {
     if (!supabaseUtils || !supabaseUtils.isSupabaseReady()) {
-      showCatalogMessage("O catalogo ainda nao foi configurado com o Supabase.");
+      showCatalogMessage("O catálogo ainda não foi configurado com o Supabase.");
       return;
     }
 
@@ -568,7 +684,7 @@
         applyFallbackProducts();
       }
     } catch (error) {
-      console.error("Falha ao carregar catalogo do Supabase:", error);
+      console.error("Falha ao carregar catálogo do Supabase:", error);
       applyFallbackProducts();
     } finally {
       isRemoteLoading = false;
@@ -701,7 +817,7 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
   refreshGlobalWhatsappLinks();
-  showCatalogMessage("Carregando catalogo...");
+  showCatalogMessage("Carregando catálogo...");
   loadCatalog();
   startRemoteAutoRefresh();
 

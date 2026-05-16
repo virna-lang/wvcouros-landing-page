@@ -176,6 +176,142 @@
     opacity: 0.58;
   }
 
+  .story-section {
+    padding: 0 0 108px;
+  }
+
+  .story-shell {
+    position: relative;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 72px clamp(24px, 5vw, 64px);
+    border: 1px solid rgba(200, 154, 34, 0.18);
+    background:
+      radial-gradient(circle at top left, rgba(200, 154, 34, 0.14), transparent 28%),
+      linear-gradient(180deg, #f9f4ec 0%, #f6efe6 100%);
+    box-shadow: 0 26px 64px rgba(42, 36, 36, 0.07);
+    overflow: hidden;
+  }
+
+  .story-shell::before,
+  .story-shell::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  .story-shell::before {
+    width: 240px;
+    height: 240px;
+    top: -120px;
+    right: -90px;
+    background: rgba(109, 20, 12, 0.06);
+  }
+
+  .story-shell::after {
+    width: 180px;
+    height: 180px;
+    bottom: -100px;
+    left: -40px;
+    background: rgba(200, 154, 34, 0.12);
+  }
+
+  .story-copy,
+  .story-divider {
+    position: relative;
+    z-index: 1;
+  }
+
+  .story-divider {
+    text-align: center;
+    color: var(--gold);
+    font-size: 18px;
+    letter-spacing: 0.56em;
+  }
+
+  .story-divider.is-top {
+    margin-bottom: 34px;
+  }
+
+  .story-divider.is-bottom {
+    margin-top: 48px;
+  }
+
+  .story-copy {
+    max-width: 580px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .story-eyebrow {
+    margin-bottom: 24px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+  }
+
+  .story-title {
+    font-size: clamp(2.6rem, 5.2vw, 4rem);
+    font-weight: 400;
+    line-height: 1.08;
+    margin-bottom: 28px;
+  }
+
+  .story-title em {
+    color: var(--burgundy);
+    font-style: italic;
+  }
+
+  .story-rule {
+    width: 42px;
+    height: 1px;
+    margin: 0 auto 28px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 18%, var(--gold) 82%, transparent 100%);
+  }
+
+  .story-body {
+    display: grid;
+    gap: 18px;
+  }
+
+  .story-body p {
+    color: rgba(42, 36, 36, 0.84);
+    font-size: 15px;
+    line-height: 1.9;
+  }
+
+  .story-body strong {
+    color: var(--burgundy);
+    font-weight: 500;
+  }
+
+  .story-signature-mark {
+    margin-top: 12px;
+    color: var(--gold);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 68px;
+    line-height: 0.7;
+  }
+
+  .story-signature {
+    margin-top: 10px;
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--burgundy);
+  }
+
+  .story-credit {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+  }
+
   .catalog {
     padding: 0 0 110px;
   }
@@ -214,18 +350,14 @@
 
   .product-image {
     position: relative;
-    aspect-ratio: 4 / 5;
-    background:
-      radial-gradient(circle at center, rgba(255, 255, 255, 0.84), rgba(244, 239, 232, 0.95) 70%),
-      var(--soft);
     margin-bottom: 22px;
     overflow: hidden;
   }
 
   .product-image img {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
+    display: block;
     transition: transform 0.28s ease, opacity 0.28s ease;
   }
 
@@ -698,6 +830,22 @@
       padding: 64px 0 94px;
     }
 
+    .story-section {
+      padding-bottom: 88px;
+    }
+
+    .story-shell {
+      padding: 48px 22px;
+    }
+
+    .story-divider {
+      letter-spacing: 0.42em;
+    }
+
+    .story-body p {
+      font-size: 14px;
+    }
+
     .products-grid {
       gap: 24px;
     }
@@ -752,6 +900,47 @@
       <h1>Bolsas em couro <br /><em>autentico.</em></h1>
       <p>Pecas sofisticadas, com acabamento artesanal e tempo de vida para acompanhar voce por anos.</p>
       <a class="hero-link" href="#catalogo">Ver colecao</a>
+    </div>
+  </section>
+
+  <section class="story-section" id="historia">
+    <div class="container">
+      <div class="story-shell">
+        <div class="story-divider is-top" aria-hidden="true">. . .</div>
+
+        <div class="story-copy">
+          <p class="story-eyebrow">Nossa história</p>
+          <h2 class="story-title">Três Vês,<br />duas terras,<br /><em>uma história.</em></h2>
+          <div class="story-rule" aria-hidden="true"></div>
+
+          <div class="story-body">
+            <p>
+              A <strong>WVCouros</strong> nasceu de três mulheres da mesma família — mãe e filhas — cujos nomes
+              começam com a mesma letra. Três Vês que se encontram no nome da marca, e que carregam, juntas,
+              duas terras: o <em>Ceará da mãe</em>, o <em>Pará das filhas</em>.
+            </p>
+            <p>
+              A fundadora é cearense, filha de pais comerciantes, e aprendeu o ofício desde cedo — vendendo,
+              atendendo, escolhendo peça boa. Mudou-se ainda jovem pra Belém, e a cidade nunca mais a deixou ir.
+            </p>
+            <p>
+              Foram décadas de Pará: tempo de fincar raiz, de virar paraense de coração, e de ver a paixão
+              de infância — bolsas, sempre bolsas — virar profissão. Há 5 anos a WVCouros desenha peças
+              sob encomenda, com couro selecionado e artesãos parceiros.
+            </p>
+            <p>
+              Cada modelo leva o nome de um pedaço do Pará — ilhas, frutos, lugares, tradições.
+              Porque é essa terra que une as três Vês.
+            </p>
+          </div>
+
+          <div class="story-signature-mark" aria-hidden="true">"</div>
+          <p class="story-signature">Todas as manas precisam de uma bolsa pra ficar elegante.</p>
+          <p class="story-credit">WVCouros</p>
+        </div>
+
+        <div class="story-divider is-bottom" aria-hidden="true">. . .</div>
+      </div>
     </div>
   </section>
 

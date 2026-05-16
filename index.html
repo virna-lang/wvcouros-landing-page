@@ -648,7 +648,13 @@
 
     <div class="nav-side right">
       <a class="nav-link" href="https://instagram.com/wvcouros">Instagram</a>
-      <a class="nav-link" id="navWhatsapp" href="#">WhatsApp</a>
+      <a
+        class="nav-link"
+        id="navWhatsapp"
+        href="https://wa.me/5585997586148?text=Ol%C3%A1!%20Quero%20atendimento%20sobre%20as%20bolsas%20da%20VW%20Couros."
+        target="_blank"
+        rel="noopener noreferrer"
+      >WhatsApp</a>
     </div>
   </div>
 </header>
@@ -687,7 +693,13 @@
         </div>
 
         <div class="cta-actions">
-          <a class="cta-button primary" id="ctaWhatsapp" href="#">
+          <a
+            class="cta-button primary"
+            id="ctaWhatsapp"
+            href="https://wa.me/5585997586148?text=Ol%C3%A1!%20Quero%20atendimento%20sobre%20as%20bolsas%20da%20VW%20Couros."
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Abrir WhatsApp
           </a>
           <a class="cta-button secondary" href="https://instagram.com/wvcouros">
@@ -752,7 +764,13 @@
         <p id="modalDelivery"></p>
       </div>
 
-      <a class="whatsapp-btn" id="modalWhatsapp" href="#">
+      <a
+        class="whatsapp-btn"
+        id="modalWhatsapp"
+        href="https://wa.me/5585997586148?text=Ol%C3%A1!%20Quero%20atendimento%20sobre%20as%20bolsas%20da%20VW%20Couros."
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         Comprar pelo WhatsApp
       </a>
     </div>
@@ -917,12 +935,14 @@
       .replace(/^-+|-+$/g, "");
   }
 
+  const DEFAULT_WHATSAPP_MESSAGE = "Olá! Quero atendimento sobre as bolsas da VW Couros.";
+
   function buildDefaultWhatsappLink() {
-    return buildWhatsappUrl("Olá! Quero atendimento sobre as bolsas da VW Couros.");
+    return buildWhatsappUrl(DEFAULT_WHATSAPP_MESSAGE);
   }
 
   function buildWhatsappUrl(message) {
-    return "https://api.whatsapp.com/send?phone=" + WHATSAPP_NUMBER + "&text=" + encodeURIComponent(message);
+    return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
   }
 
   function formatPrice(value) {

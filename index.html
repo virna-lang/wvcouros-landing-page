@@ -336,6 +336,41 @@
     gap: 30px;
   }
 
+  .catalog-filters {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 12px 0 34px;
+  }
+
+  .catalog-filter-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    padding: 0 0 6px;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .catalog-filter-btn:hover,
+  .catalog-filter-btn:focus-visible {
+    color: var(--ink);
+    opacity: 0.72;
+  }
+
+  .catalog-filter-btn.active {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
   .product-card {
     text-align: center;
   }
@@ -428,6 +463,12 @@
   .product-status-badge.is-sob_encomenda,
   .color-status.is-sob_encomenda {
     background: var(--consult);
+    color: #2a2424;
+  }
+
+  .product-status-badge.is-lancamento,
+  .modal-badge.is-lancamento {
+    background: rgba(200, 154, 34, 0.9);
     color: #2a2424;
   }
 
@@ -1023,6 +1064,7 @@
         <h2>Nossas peças</h2>
       </div>
 
+      <div class="catalog-filters" id="catalogTypeFilters"></div>
       <div class="products-grid" id="productsGrid"></div>
     </div>
   </section>

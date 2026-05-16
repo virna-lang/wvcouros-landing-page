@@ -12,12 +12,28 @@
     esgotado: "Esgotado",
     sob_encomenda: "Sob consulta"
   };
+  const PRODUCT_DISPLAY_STATUS_LABELS = {
+    ativo: "Ativo",
+    esgotado: "Esgotado",
+    sob_encomenda: "Sob encomenda",
+    lancamento: "Lançamento",
+    inativo: "Inativo",
+    arquivado: "Arquivado"
+  };
   const DEFAULT_BADGE_LABELS = {
     lancamento: "Lançamento",
     mais_vendida: "Mais vendida",
     edicao_limitada: "Edição limitada",
     promocao: "Promoção"
   };
+  const PRODUCT_TYPE_OPTIONS = ["bolsa", "carteira", "mochila"];
+  const PRODUCT_TYPE_LABELS = {
+    bolsa: "Bolsa",
+    carteira: "Carteira",
+    mochila: "Mochila"
+  };
+  const META_STATUS_PREFIX = "__wv:status:";
+  const META_TYPE_PREFIX = "__wv:type:";
   const COLOR_MAP = {
     preto: "#1a1a1a",
     caramelo: "#aa5b2f",
@@ -28,6 +44,7 @@
   };
 
   const productsGrid = document.getElementById("productsGrid");
+  const catalogTypeFilters = document.getElementById("catalogTypeFilters");
   const navWhatsapp = document.getElementById("navWhatsapp");
   const ctaWhatsapp = document.getElementById("ctaWhatsapp");
   const modal = document.getElementById("modal");
@@ -60,6 +77,7 @@
   let currentColorId = null;
   let currentImage = null;
   let currentGallery = [];
+  let activeProductType = "all";
   let remoteRefreshTimer = null;
   let isRemoteLoading = false;
 
@@ -141,6 +159,72 @@
     return COLOR_MAP[slugify(name)] || "#b38d73";
   }
 
+  function inferProductTypes(name) {
+    const normalized = slugify(name);
+    if (normalized.indexOf("carteira") >= 0) {
+      return ["carteira"];
+    }
+    if (normalized.indexOf("mochila") >= 0) {
+      return ["mochila"];
+    }
+    return ["bolsa"];
+  }
+
+  function normalizeProductTypes(values, productName) {
+    const allowed = new Set(PRODUCT_TYPE_OPTIONS);
+    const seen = new Set();
+    const normalized = (Array.isArray(values) ? values : []).reduce(function(list, value) {
+      const code = slugify(value);
+      if (!allowed.has(code) || seen.has(code)) {
+        return list;
+      }
+      seen.add(code);
+      list.push(code);
+      return list;
+    }, []);
+
+    return normalized.length ? normalized : inferProductTypes(productName);
+  }
+
+  function extractProductMeta(features, catalogStatus, badgeCode, productName) {
+    const visibleFeatures = [];
+    const productTypes = [];
+    let displayStatus = "";
+
+    (Array.isArray(features) ? features : []).forEach(function(item) {
+      const value = String(item || "").trim();
+      if (!value) {
+        return;
+      }
+      if (value.indexOf(META_TYPE_PREFIX) === 0) {
+        productTypes.push(value.slice(META_TYPE_PREFIX.length));
+        return;
+      }
+      if (value.indexOf(META_STATUS_PREFIX) === 0) {
+        displayStatus = value.slice(META_STATUS_PREFIX.length) || displayStatus;
+        return;
+      }
+      visibleFeatures.push(value);
+    });
+
+    const normalizedCatalogStatus = String(catalogStatus || "ativo").trim();
+    if (!displayStatus) {
+      if (normalizedCatalogStatus === "arquivado" || normalizedCatalogStatus === "inativo") {
+        displayStatus = normalizedCatalogStatus;
+      } else if (String(badgeCode || "").trim() === "lancamento") {
+        displayStatus = "lancamento";
+      } else {
+        displayStatus = "ativo";
+      }
+    }
+
+    return {
+      visibleFeatures: visibleFeatures,
+      productTypes: normalizeProductTypes(productTypes, productName),
+      displayStatus: displayStatus
+    };
+  }
+
   function buildDefaultWhatsappLink() {
     return buildWhatsappUrl("Olá! Quero atendimento sobre as bolsas da VW Couros.");
   }
@@ -158,9 +242,10 @@
     ctaWhatsapp.href = buildDefaultWhatsappLink();
   }
 
-  function buildWhatsappLink(product, colorRecord) {
+  function buildWhatsappLink(product, colorRecord, availabilityState) {
     const colorPart = colorRecord ? " na cor " + colorRecord.name : "";
-    const isConsultation = colorRecord && colorRecord.status !== "disponivel";
+    const currentAvailability = availabilityState || getAvailabilityState(product, colorRecord);
+    const isConsultation = currentAvailability.code !== "disponivel";
     const message = isConsultation
       ? "Olá! Quero consultar a disponibilidade da " + product.name + colorPart + "."
       : "Olá! Tenho interesse na " + product.name + colorPart + " (" + formatPrice(product.price) + "). Pode me passar mais informações?";
@@ -172,8 +257,97 @@
     return DEFAULT_STATUS_LABELS[code] || "Disponível";
   }
 
+  function productStatusLabel(code) {
+    return PRODUCT_DISPLAY_STATUS_LABELS[code] || PRODUCT_DISPLAY_STATUS_LABELS.ativo;
+  }
+
   function badgeLabel(code) {
     return badgeLabels[code] || DEFAULT_BADGE_LABELS[code] || "";
+  }
+
+  function getExtraBadgeLabel(product) {
+    if (!product || !product.badgeLabel) {
+      return "";
+    }
+    if (product.displayStatus === "lancamento" && product.badgeCode === "lancamento") {
+      return "";
+    }
+    return product.badgeLabel;
+  }
+
+  function getCardStatus(product, colorRecord) {
+    const productStatus = String(product && product.displayStatus || "ativo").trim();
+    const colorStatus = colorRecord ? colorRecord.status : "disponivel";
+
+    if (productStatus === "esgotado") {
+      return { code: "esgotado", label: productStatusLabel(productStatus) };
+    }
+    if (colorStatus === "esgotado") {
+      return { code: "esgotado", label: colorRecord.statusLabel || statusLabel(colorStatus) };
+    }
+    if (productStatus === "sob_encomenda") {
+      return { code: "sob_encomenda", label: productStatusLabel(productStatus) };
+    }
+    if (colorStatus === "sob_encomenda") {
+      return { code: "sob_encomenda", label: colorRecord.statusLabel || statusLabel(colorStatus) };
+    }
+    return null;
+  }
+
+  function getAvailabilityState(product, colorRecord) {
+    const productStatus = String(product && product.displayStatus || "ativo").trim();
+    const colorStatus = colorRecord ? colorRecord.status : "disponivel";
+
+    if (productStatus === "esgotado") {
+      return { code: "esgotado", label: productStatusLabel(productStatus) };
+    }
+    if (colorStatus === "esgotado") {
+      return { code: "esgotado", label: colorRecord.statusLabel || statusLabel(colorStatus) };
+    }
+    if (productStatus === "sob_encomenda") {
+      return { code: "sob_encomenda", label: productStatusLabel(productStatus) };
+    }
+    if (colorStatus === "sob_encomenda") {
+      return { code: "sob_encomenda", label: colorRecord.statusLabel || statusLabel(colorStatus) };
+    }
+
+    return { code: "disponivel", label: statusLabel("disponivel") };
+  }
+
+  function getFilteredProducts() {
+    if (activeProductType === "all") {
+      return products.slice();
+    }
+
+    return products.filter(function(product) {
+      return Array.isArray(product.productTypes) && product.productTypes.indexOf(activeProductType) >= 0;
+    });
+  }
+
+  function renderTypeFilters() {
+    if (!catalogTypeFilters) {
+      return;
+    }
+
+    const options = [{ value: "all", label: "Todos" }].concat(PRODUCT_TYPE_OPTIONS.map(function(type) {
+      return {
+        value: type,
+        label: PRODUCT_TYPE_LABELS[type]
+      };
+    }));
+
+    catalogTypeFilters.innerHTML = options.map(function(option) {
+      const className = option.value === activeProductType ? "catalog-filter-btn active" : "catalog-filter-btn";
+      return '<button type="button" class="' + className + '" data-type-filter="' + escapeHtml(option.value) + '">' + escapeHtml(option.label) + "</button>";
+    }).join("");
+
+    catalogTypeFilters.querySelectorAll("[data-type-filter]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        activeProductType = button.getAttribute("data-type-filter") || "all";
+        renderTypeFilters();
+        renderProducts();
+      });
+    });
   }
 
   function getDefaultColor(product) {
@@ -342,16 +516,26 @@
       return;
     }
 
-    productsGrid.innerHTML = products.map(function(product) {
+    const visibleProducts = getFilteredProducts();
+    if (!visibleProducts.length) {
+      showCatalogMessage("Nenhum produto encontrado neste tipo.");
+      return;
+    }
+
+    productsGrid.innerHTML = visibleProducts.map(function(product) {
       const defaultColor = getDefaultColor(product);
       const primaryImage = getPrimaryImage(product, defaultColor);
-      const productBadge = product.badgeLabel
-        ? '<span class="product-badge">' + escapeHtml(product.badgeLabel) + "</span>"
+      const extraBadgeLabel = getExtraBadgeLabel(product);
+      const cardStatus = getCardStatus(product, defaultColor);
+      const availabilityState = getAvailabilityState(product, defaultColor);
+      const productBadgeLabel = extraBadgeLabel || (product.displayStatus === "lancamento" ? productStatusLabel("lancamento") : "");
+      const productBadge = productBadgeLabel
+        ? '<span class="product-badge">' + escapeHtml(productBadgeLabel) + "</span>"
         : "";
-      const statusBadge = defaultColor && defaultColor.status !== "disponivel"
-        ? '<span class="product-status-badge is-' + escapeHtml(defaultColor.status) + '">' + escapeHtml(defaultColor.statusLabel) + "</span>"
+      const statusBadge = cardStatus
+        ? '<span class="product-status-badge is-' + escapeHtml(cardStatus.code) + '">' + escapeHtml(cardStatus.label) + "</span>"
         : "";
-      const imageClass = defaultColor && defaultColor.status === "esgotado"
+      const imageClass = availabilityState.code === "esgotado"
         ? "product-photo is-muted"
         : "product-photo";
 
@@ -380,10 +564,10 @@
     });
   }
 
-  function setCtaState(product, colorRecord) {
-    const currentStatus = colorRecord ? colorRecord.status : "disponivel";
-    const isSoldOut = currentStatus === "esgotado";
-    const isConsultation = currentStatus === "sob_encomenda" || currentStatus === "esgotado";
+  function setCtaState(product, colorRecord, availabilityState) {
+    const currentAvailability = availabilityState || getAvailabilityState(product, colorRecord);
+    const isSoldOut = currentAvailability.code === "esgotado";
+    const isConsultation = currentAvailability.code === "sob_encomenda" || currentAvailability.code === "esgotado";
 
     modalWhatsapp.textContent = isConsultation ? "Sob consulta" : "Comprar pelo WhatsApp";
     modalWhatsapp.classList.toggle("is-disabled", isSoldOut);
@@ -393,26 +577,31 @@
       modalWhatsapp.removeAttribute("href");
       modalWhatsapp.setAttribute("tabindex", "-1");
     } else {
-      modalWhatsapp.href = buildWhatsappLink(product, colorRecord);
+      modalWhatsapp.href = buildWhatsappLink(product, colorRecord, currentAvailability);
       modalWhatsapp.removeAttribute("tabindex");
     }
   }
 
   function renderCurrentStatus(product, colorRecord) {
-    const currentStatus = colorRecord ? colorRecord.status : "disponivel";
-    const currentLabel = colorRecord ? colorRecord.statusLabel : statusLabel("disponivel");
+    const availabilityState = getAvailabilityState(product, colorRecord);
+    const currentStatus = availabilityState.code;
+    const currentLabel = availabilityState.label;
     const isMuted = currentStatus === "esgotado";
+    const launchBadge = product.displayStatus === "lancamento";
+    const extraBadgeLabel = getExtraBadgeLabel(product);
 
     modalImage.classList.toggle("is-muted", isMuted);
     modalVisualStatus.hidden = currentStatus === "disponivel";
     modalVisualStatus.textContent = currentStatus === "disponivel" ? "" : currentLabel;
 
-    if (product.badgeLabel) {
+    if (launchBadge || extraBadgeLabel) {
       modalBadge.hidden = false;
-      modalBadge.textContent = product.badgeLabel;
+      modalBadge.textContent = launchBadge ? productStatusLabel("lancamento") : extraBadgeLabel;
+      modalBadge.classList.toggle("is-lancamento", launchBadge);
     } else {
       modalBadge.hidden = true;
       modalBadge.textContent = "";
+      modalBadge.classList.remove("is-lancamento");
     }
 
     if (currentStatus === "esgotado") {
@@ -426,7 +615,7 @@
       modalStatusNote.textContent = "";
     }
 
-    setCtaState(product, colorRecord);
+    setCtaState(product, colorRecord, availabilityState);
   }
 
   function renderModalColors(product) {
@@ -581,6 +770,7 @@
       badgeLabels = Object.assign({}, DEFAULT_BADGE_LABELS, result.badgeLabels);
     }
 
+    renderTypeFilters();
     renderProducts();
     refreshGlobalWhatsappLinks();
 
@@ -605,6 +795,9 @@
       default_delivery_text: DEFAULT_DELIVERY_TEXT
     };
     badgeLabels = Object.assign({}, DEFAULT_BADGE_LABELS);
+    if (catalogTypeFilters) {
+      catalogTypeFilters.innerHTML = "";
+    }
     refreshGlobalWhatsappLinks();
     showCatalogMessage("Não foi possível carregar o catálogo agora. Tente novamente em instantes.");
   }
@@ -630,7 +823,7 @@
         client.from("site_settings").select("*").maybeSingle(),
         client.from("badge_options").select("code, label").eq("is_active", true),
         client.from("products")
-          .select("id, slug, sku, name, description, features, material, dimensions, price, badge_code, sort_order")
+          .select("id, slug, sku, name, description, features, material, dimensions, price, badge_code, catalog_status, sort_order")
           .eq("catalog_status", "ativo")
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: false })
@@ -753,6 +946,8 @@
     });
 
     const normalizedProducts = (payload.products || []).map(function(product) {
+      const catalogStatus = String(product.catalog_status || "ativo").trim();
+      const meta = extractProductMeta(product.features, catalogStatus, product.badge_code, product.name);
       const generalImages = uniqueList((imagesByProduct[product.id] || []).sort(sortByPrimaryThenOrder).map(function(item) {
         return item.url;
       }));
@@ -770,11 +965,14 @@
         material: String(product.material || "").trim(),
         dimensions: String(product.dimensions || "").trim(),
         price: Number(product.price || 0),
+        catalogStatus: catalogStatus,
+        displayStatus: meta.displayStatus,
         badgeCode: String(product.badge_code || "").trim(),
         badgeLabel: badgeLabel(String(product.badge_code || "").trim()),
         payment: paymentText,
         delivery: deliveryText,
-        features: Array.isArray(product.features) ? product.features.filter(Boolean) : [],
+        productTypes: meta.productTypes,
+        features: meta.visibleFeatures,
         images: generalImages,
         colors: productColors,
         sortOrder: Number(product.sort_order || 0) || 0

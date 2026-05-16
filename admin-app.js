@@ -7,8 +7,26 @@
     badges: [],
     products: [],
     currentProductId: null,
-    removedColorIds: []
+    removedColorIds: [],
+    dragProductId: null,
+    suppressProductClickUntil: 0
   };
+
+  const PRODUCT_TYPE_OPTIONS = ["bolsa", "carteira", "mochila"];
+  const PRODUCT_TYPE_LABELS = {
+    bolsa: "Bolsa",
+    carteira: "Carteira",
+    mochila: "Mochila"
+  };
+  const PRODUCT_STATUS_OPTIONS = [
+    { value: "ativo", label: "Ativo" },
+    { value: "esgotado", label: "Esgotado" },
+    { value: "sob_encomenda", label: "Sob encomenda" },
+    { value: "lancamento", label: "Lançamento" },
+    { value: "inativo", label: "Inativo" }
+  ];
+  const META_STATUS_PREFIX = "__wv:status:";
+  const META_TYPE_PREFIX = "__wv:type:";
 
   const els = {
     authWrap: document.getElementById("authWrap"),
@@ -35,7 +53,8 @@
     colorRows: document.getElementById("colorRows"),
     galleryList: document.getElementById("galleryList"),
     galleryTargetColor: document.getElementById("galleryTargetColor"),
-    productBadge: document.getElementById("productBadge")
+    productBadge: document.getElementById("productBadge"),
+    productTypeChoices: document.getElementById("productTypeChoices")
   };
 
   const forms = {
@@ -107,6 +126,144 @@
       .filter(Boolean);
   }
 
+  function inferProductTypes(name) {
+    const normalized = slugify(name);
+    if (normalized.indexOf("carteira") >= 0) {
+      return ["carteira"];
+    }
+    if (normalized.indexOf("mochila") >= 0) {
+      return ["mochila"];
+    }
+    return ["bolsa"];
+  }
+
+  function normalizeProductTypes(values, productName) {
+    const allowed = new Set(PRODUCT_TYPE_OPTIONS);
+    const seen = new Set();
+    const normalized = (Array.isArray(values) ? values : []).reduce(function(list, value) {
+      const code = slugify(value);
+      if (!allowed.has(code) || seen.has(code)) {
+        return list;
+      }
+      seen.add(code);
+      list.push(code);
+      return list;
+    }, []);
+
+    return normalized.length ? normalized : inferProductTypes(productName);
+  }
+
+  function extractProductMeta(features, catalogStatus, badgeCode, productName) {
+    const visibleFeatures = [];
+    const productTypes = [];
+    let displayStatus = "";
+
+    (Array.isArray(features) ? features : []).forEach(function(item) {
+      const value = String(item || "").trim();
+      if (!value) {
+        return;
+      }
+      if (value.indexOf(META_TYPE_PREFIX) === 0) {
+        productTypes.push(value.slice(META_TYPE_PREFIX.length));
+        return;
+      }
+      if (value.indexOf(META_STATUS_PREFIX) === 0) {
+        displayStatus = value.slice(META_STATUS_PREFIX.length) || displayStatus;
+        return;
+      }
+      visibleFeatures.push(value);
+    });
+
+    const normalizedCatalogStatus = String(catalogStatus || "ativo").trim();
+    if (!displayStatus) {
+      if (normalizedCatalogStatus === "arquivado" || normalizedCatalogStatus === "inativo") {
+        displayStatus = normalizedCatalogStatus;
+      } else if (String(badgeCode || "").trim() === "lancamento") {
+        displayStatus = "lancamento";
+      } else {
+        displayStatus = "ativo";
+      }
+    }
+
+    return {
+      visibleFeatures: visibleFeatures,
+      productTypes: normalizeProductTypes(productTypes, productName),
+      displayStatus: displayStatus
+    };
+  }
+
+  function composeProductFeatures(visibleFeatures, productTypes, displayStatus, productName) {
+    const cleanFeatures = (Array.isArray(visibleFeatures) ? visibleFeatures : []).filter(function(item) {
+      return item && item.indexOf(META_TYPE_PREFIX) !== 0 && item.indexOf(META_STATUS_PREFIX) !== 0;
+    });
+    const next = cleanFeatures.slice();
+
+    normalizeProductTypes(productTypes, productName).forEach(function(type) {
+      next.push(META_TYPE_PREFIX + type);
+    });
+
+    if (displayStatus) {
+      next.push(META_STATUS_PREFIX + displayStatus);
+    }
+
+    return next;
+  }
+
+  function getCatalogStatusForDisplayStatus(displayStatus) {
+    if (displayStatus === "inativo") {
+      return "inativo";
+    }
+    if (displayStatus === "arquivado") {
+      return "arquivado";
+    }
+    return "ativo";
+  }
+
+  function ensureProductStatusOptions(selectedStatus) {
+    const options = PRODUCT_STATUS_OPTIONS.slice();
+    if (selectedStatus === "arquivado") {
+      options.push({ value: "arquivado", label: "Arquivado" });
+    }
+
+    forms.productStatus.innerHTML = options.map(function(option) {
+      return '<option value="' + escapeHtml(option.value) + '">' + escapeHtml(option.label) + "</option>";
+    }).join("");
+    forms.productStatus.value = selectedStatus || "ativo";
+  }
+
+  function updateProductTypeChoiceStyles() {
+    if (!els.productTypeChoices) {
+      return;
+    }
+
+    els.productTypeChoices.querySelectorAll(".choice-pill").forEach(function(label) {
+      const input = label.querySelector("input");
+      label.classList.toggle("is-selected", Boolean(input && input.checked));
+    });
+  }
+
+  function setSelectedProductTypes(types) {
+    if (!els.productTypeChoices) {
+      return;
+    }
+
+    const selected = new Set(Array.isArray(types) ? types : []);
+    els.productTypeChoices.querySelectorAll('input[type="checkbox"]').forEach(function(input) {
+      input.checked = selected.has(input.value);
+    });
+    updateProductTypeChoiceStyles();
+  }
+
+  function getSelectedProductTypes() {
+    if (!els.productTypeChoices) {
+      return [];
+    }
+
+    return Array.from(els.productTypeChoices.querySelectorAll('input[type="checkbox"]:checked')).map(function(input) {
+      return input.value;
+    });
+  }
+
   function formatPrice(value) {
     return Number(value || 0).toLocaleString("pt-BR", {
       style: "currency",
@@ -125,10 +282,15 @@
       ativo: "Ativo",
       inativo: "Inativo",
       arquivado: "Arquivado",
+      lancamento: "Lançamento",
       disponivel: "Disponível",
       esgotado: "Esgotado",
       sob_encomenda: "Sob encomenda"
     }[status] || status;
+  }
+
+  function getProductTypeLabel(type) {
+    return PRODUCT_TYPE_LABELS[type] || type;
   }
 
   function setAuthView(isAuthenticated) {
@@ -198,19 +360,25 @@
     });
 
     const products = (payload.products || []).map(function(product) {
+      const catalogStatus = String(product.catalog_status || "ativo").trim();
+      const meta = extractProductMeta(product.features, catalogStatus, product.badge_code, product.name);
+
       return {
         id: product.id,
         slug: String(product.slug || "").trim(),
         sku: String(product.sku || "").trim(),
         name: String(product.name || "").trim(),
         description: String(product.description || "").trim(),
-        features: Array.isArray(product.features) ? product.features : [],
+        features: meta.visibleFeatures,
         material: String(product.material || "").trim(),
         dimensions: String(product.dimensions || "").trim(),
         price: Number(product.price || 0),
-        status: String(product.catalog_status || "ativo").trim(),
+        status: catalogStatus,
+        catalogStatus: catalogStatus,
+        displayStatus: meta.displayStatus,
         badgeCode: String(product.badge_code || "").trim(),
         sortOrder: Number(product.sort_order || 0) || 0,
+        productTypes: meta.productTypes,
         colors: (colorsByProduct[product.id] || []).slice().sort(function(a, b) {
           return (a.sortOrder || 0) - (b.sortOrder || 0);
         }),
@@ -235,7 +403,7 @@
     const products = state.products;
     const totalProducts = products.length;
     const activeProducts = products.filter(function(product) {
-      return product.status === "ativo";
+      return product.catalogStatus === "ativo";
     }).length;
     const totalColors = products.reduce(function(total, product) {
       return total + product.colors.length;
@@ -277,6 +445,7 @@
 
   function renderProductList() {
     const query = String(els.productSearch.value || "").trim().toLowerCase();
+    const canReorder = !query;
     const filteredProducts = state.products.filter(function(product) {
       if (!query) {
         return true;
@@ -287,23 +456,44 @@
       });
     });
 
+    els.productList.classList.toggle("is-reorder-disabled", !canReorder);
     if (!filteredProducts.length) {
       els.productList.innerHTML = '<div class="empty-state">Nenhum produto encontrado.</div>';
       return;
     }
 
     els.productList.innerHTML = filteredProducts.map(function(product) {
-      const isActive = product.id === state.currentProductId ? " active" : "";
-      const badge = product.badgeCode
+      const classNames = ["product-item"];
+      if (product.id === state.currentProductId) {
+        classNames.push("active");
+      }
+      if (state.dragProductId === product.id) {
+        classNames.push("is-dragging");
+      }
+      if (canReorder) {
+        classNames.push("is-draggable");
+      }
+
+      const statusClass = slugify(product.displayStatus || product.status || "ativo").replace(/-/g, "_");
+      const badge = product.badgeCode && !(product.badgeCode === "lancamento" && product.displayStatus === "lancamento")
         ? '<span class="pill">' + escapeHtml(findBadgeLabel(product.badgeCode)) + "</span>"
         : "";
+      const typePills = (product.productTypes || []).map(function(type) {
+        return '<span class="pill">' + escapeHtml(getProductTypeLabel(type)) + "</span>";
+      }).join("");
+      const dragHint = canReorder ? '<span class="drag-hint">Arrastar</span>' : "";
+
       return (
-        '<button type="button" class="product-item' + isActive + '" data-product-id="' + escapeHtml(product.id) + '">' +
+        '<button type="button" class="' + classNames.join(" ") + '" data-product-id="' + escapeHtml(product.id) + '" draggable="' + (canReorder ? "true" : "false") + '">' +
+        '<div class="product-item-head">' +
         "<strong>" + escapeHtml(product.name) + "</strong>" +
+        dragHint +
+        "</div>" +
         '<div class="product-meta">' +
-        '<span class="status-pill">' + escapeHtml(getStatusLabel(product.status)) + "</span>" +
+        '<span class="status-pill ' + escapeHtml(statusClass) + '">' + escapeHtml(getStatusLabel(product.displayStatus || product.status)) + "</span>" +
         badge +
         "</div>" +
+        (typePills ? '<div class="product-item-types">' + typePills + "</div>" : "") +
         '<div class="pill-row">' +
         '<span class="pill">SKU ' + escapeHtml(product.sku) + "</span>" +
         '<span class="pill">' + formatPrice(product.price) + "</span>" +
@@ -314,12 +504,112 @@
 
     els.productList.querySelectorAll("[data-product-id]").forEach(function(button) {
       button.addEventListener("click", function() {
+        if (Date.now() < state.suppressProductClickUntil) {
+          return;
+        }
         state.currentProductId = button.getAttribute("data-product-id");
         state.removedColorIds = [];
         renderProductList();
         renderEditor();
       });
+
+      if (canReorder) {
+        button.addEventListener("dragstart", function(event) {
+          state.dragProductId = button.getAttribute("data-product-id");
+          button.classList.add("is-dragging");
+          if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", state.dragProductId);
+          }
+        });
+
+        button.addEventListener("dragover", function(event) {
+          if (!state.dragProductId || state.dragProductId === button.getAttribute("data-product-id")) {
+            return;
+          }
+          event.preventDefault();
+          button.classList.add("is-drop-target");
+        });
+
+        button.addEventListener("dragleave", function() {
+          button.classList.remove("is-drop-target");
+        });
+
+        button.addEventListener("drop", function(event) {
+          event.preventDefault();
+          button.classList.remove("is-drop-target");
+          const targetProductId = button.getAttribute("data-product-id");
+          reorderProducts(state.dragProductId, targetProductId);
+        });
+
+        button.addEventListener("dragend", function() {
+          state.dragProductId = null;
+          state.suppressProductClickUntil = Date.now() + 180;
+          els.productList.querySelectorAll(".product-item").forEach(function(item) {
+            item.classList.remove("is-dragging", "is-drop-target");
+          });
+        });
+      }
     });
+  }
+
+  async function reorderProducts(sourceProductId, targetProductId) {
+    if (!sourceProductId || !targetProductId || sourceProductId === targetProductId || !state.session) {
+      return;
+    }
+
+    const previousProducts = state.products.slice();
+    const previousSortOrder = previousProducts.reduce(function(map, product) {
+      map[product.id] = product.sortOrder;
+      return map;
+    }, {});
+    const sourceIndex = state.products.findIndex(function(product) {
+      return product.id === sourceProductId;
+    });
+    const targetIndex = state.products.findIndex(function(product) {
+      return product.id === targetProductId;
+    });
+
+    if (sourceIndex < 0 || targetIndex < 0) {
+      return;
+    }
+
+    const movedProduct = state.products.splice(sourceIndex, 1)[0];
+    state.products.splice(targetIndex, 0, movedProduct);
+    state.products.forEach(function(product, index) {
+      product.sortOrder = index;
+    });
+    state.dragProductId = null;
+    state.suppressProductClickUntil = Date.now() + 180;
+
+    renderProductList();
+    renderEditor();
+
+    try {
+      showMessage(els.productMessage, "Salvando nova ordem dos produtos...", "info");
+      await Promise.all(state.products.map(function(product, index) {
+        return state.client.from("products")
+          .update({
+            sort_order: index,
+            updated_by: state.session.user.id
+          })
+          .eq("id", product.id)
+          .then(function(result) {
+            if (result.error) {
+              throw result.error;
+            }
+          });
+      }));
+      showMessage(els.productMessage, "Ordem dos produtos atualizada.", "success");
+    } catch (error) {
+      state.products = previousProducts;
+      state.products.forEach(function(product) {
+        product.sortOrder = previousSortOrder[product.id];
+      });
+      renderProductList();
+      renderEditor();
+      showMessage(els.productMessage, normalizeError(error, "Não foi possível salvar a nova ordem dos produtos."), "error");
+    }
   }
 
   function buildColorRow(color) {
@@ -579,13 +869,14 @@
       forms.productSlug.value = "";
       forms.productSku.value = "";
       forms.productPrice.value = "";
-      forms.productStatus.value = "ativo";
+      ensureProductStatusOptions("ativo");
       forms.productBadge.value = "";
       forms.productOrder.value = String(state.products.length);
       forms.productMaterial.value = "";
       forms.productDimensions.value = "";
       forms.productDescription.value = "";
       forms.productFeatures.value = "";
+      setSelectedProductTypes([]);
       renderColorRows([]);
       renderGalleryList(null);
       return;
@@ -595,13 +886,14 @@
     forms.productSlug.value = product.slug;
     forms.productSku.value = product.sku;
     forms.productPrice.value = String(product.price || "");
-    forms.productStatus.value = product.status || "ativo";
+    ensureProductStatusOptions(product.catalogStatus === "arquivado" ? "arquivado" : (product.displayStatus || "ativo"));
     forms.productBadge.value = product.badgeCode || "";
     forms.productOrder.value = String(product.sortOrder || 0);
     forms.productMaterial.value = product.material || "";
     forms.productDimensions.value = product.dimensions || "";
     forms.productDescription.value = product.description || "";
     forms.productFeatures.value = (product.features || []).join("\n");
+    setSelectedProductTypes(product.productTypes || []);
 
     renderColorRows(product.colors || []);
     renderGalleryList(product);
@@ -872,16 +1164,19 @@
     const name = forms.productName.value.trim();
     const slug = forms.productSlug.value.trim() || slugify(name);
     const sku = forms.productSku.value.trim();
+    const selectedDisplayStatus = forms.productStatus.value || "ativo";
+    const selectedProductTypes = normalizeProductTypes(getSelectedProductTypes(), name);
+    const visibleFeatures = parseFeatureLines(forms.productFeatures.value);
     const productPayload = {
       slug: slug,
       sku: sku,
       name: name,
       description: forms.productDescription.value.trim(),
-      features: parseFeatureLines(forms.productFeatures.value),
+      features: composeProductFeatures(visibleFeatures, selectedProductTypes, selectedDisplayStatus, name),
       material: forms.productMaterial.value.trim() || null,
       dimensions: forms.productDimensions.value.trim() || null,
       price: Number(forms.productPrice.value || 0),
-      catalog_status: forms.productStatus.value,
+      catalog_status: getCatalogStatusForDisplayStatus(selectedDisplayStatus),
       badge_code: forms.productBadge.value || null,
       sort_order: Number(forms.productOrder.value || 0),
       updated_by: state.session.user.id
@@ -1409,6 +1704,13 @@
         forms.productSlug.value = slugify(forms.productName.value);
       }
     });
+
+    if (els.productTypeChoices) {
+      els.productTypeChoices.querySelectorAll('input[type="checkbox"]').forEach(function(input) {
+        input.addEventListener("change", updateProductTypeChoiceStyles);
+      });
+      updateProductTypeChoiceStyles();
+    }
   }
 
   async function init() {

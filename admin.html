@@ -345,6 +345,10 @@
     overflow: auto;
   }
 
+  .product-list.is-reorder-disabled .product-item {
+    cursor: default;
+  }
+
   .product-item {
     display: grid;
     gap: 6px;
@@ -354,6 +358,11 @@
     border-radius: 20px;
     border: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.76);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
   }
 
   .product-item.active {
@@ -361,8 +370,46 @@
     box-shadow: inset 0 0 0 1px rgba(109, 20, 12, 0.08);
   }
 
+  .product-item.is-draggable {
+    cursor: grab;
+  }
+
+  .product-item.is-dragging {
+    opacity: 0.64;
+    transform: scale(0.98);
+    cursor: grabbing;
+  }
+
+  .product-item.is-drop-target {
+    border-color: rgba(109, 20, 12, 0.42);
+    box-shadow:
+      inset 0 0 0 1px rgba(109, 20, 12, 0.12),
+      0 12px 30px rgba(109, 20, 12, 0.08);
+  }
+
   .product-item strong {
     font-size: 1rem;
+  }
+
+  .product-item-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .drag-hint {
+    color: var(--muted);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .product-item-types {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .product-meta,
@@ -404,6 +451,61 @@
   .status-pill.sob_encomenda {
     background: #fff7dd;
     color: var(--warn);
+  }
+
+  .status-pill.lancamento {
+    background: rgba(200, 149, 8, 0.16);
+    color: var(--warn);
+  }
+
+  .choice-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .choice-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .choice-pill:hover,
+  .choice-pill:focus-within {
+    border-color: rgba(109, 20, 12, 0.28);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+
+  .choice-pill input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .choice-pill.is-selected {
+    border-color: rgba(109, 20, 12, 0.28);
+    background: rgba(109, 20, 12, 0.1);
+    color: var(--burgundy);
+  }
+
+  .field-hint {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.5;
   }
 
   .editor {
@@ -682,7 +784,7 @@
           <div class="section-header">
             <div>
               <h3>Produtos</h3>
-              <p>Escolha um produto existente ou comece um novo cadastro.</p>
+              <p>Escolha um produto existente ou comece um novo cadastro. Arraste os cards para mudar a ordem.</p>
             </div>
           </div>
 
@@ -739,8 +841,10 @@
                   <label for="productStatus">Status do produto</label>
                   <select id="productStatus" name="status">
                     <option value="ativo">Ativo</option>
+                    <option value="esgotado">Esgotado</option>
+                    <option value="sob_encomenda">Sob encomenda</option>
+                    <option value="lancamento">Lançamento</option>
                     <option value="inativo">Inativo</option>
-                    <option value="arquivado">Arquivado</option>
                   </select>
                 </div>
 
@@ -750,6 +854,25 @@
                     <option value="">Sem selo</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="field">
+                <label>Tipo do produto</label>
+                <div class="choice-group" id="productTypeChoices">
+                  <label class="choice-pill">
+                    <input type="checkbox" value="bolsa" />
+                    <span>Bolsa</span>
+                  </label>
+                  <label class="choice-pill">
+                    <input type="checkbox" value="carteira" />
+                    <span>Carteira</span>
+                  </label>
+                  <label class="choice-pill">
+                    <input type="checkbox" value="mochila" />
+                    <span>Mochila</span>
+                  </label>
+                </div>
+                <p class="field-hint">Você pode marcar mais de um tipo para o mesmo produto.</p>
               </div>
 
               <div class="field-grid three">

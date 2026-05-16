@@ -484,6 +484,17 @@
       "</p>";
   }
 
+  function showCatalogLoading() {
+    productsGrid.innerHTML =
+      '<div class="catalog-loader-shell" role="status" aria-live="polite">' +
+      '<div class="catalog-loader" aria-label="Carregando catálogo">' +
+      '<div class="catalog-loader-word" data-word="VW COUROS" aria-hidden="true">VW COUROS</div>' +
+      '<div class="catalog-loader-label">Carregando catálogo</div>' +
+      '<p class="catalog-loader-subcopy">Preparando modelos, cores e acabamentos para você.</p>' +
+      "</div>" +
+      "</div>";
+  }
+
   function setModalImage(url, alt) {
     currentImage = String(url || "").trim();
     modalImage.src = currentImage;
@@ -1076,7 +1087,7 @@
   document.getElementById("year").textContent = new Date().getFullYear();
   initializeThemeToggle();
   refreshGlobalWhatsappLinks();
-  showCatalogMessage("Carregando catálogo...");
+  showCatalogLoading();
   loadCatalog();
   startRemoteAutoRefresh();
 

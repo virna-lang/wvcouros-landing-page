@@ -248,7 +248,7 @@
     const isConsultation = currentAvailability.code !== "disponivel";
     const message = isConsultation
       ? "Olá! Quero consultar a disponibilidade da " + product.name + colorPart + "."
-      : "Olá! Tenho interesse na " + product.name + colorPart + " (" + formatPrice(product.price) + "). Pode me passar mais informações?";
+      : "Olá, estou interessada na " + product.name + colorPart + " no valor de " + formatPrice(product.price) + ".";
 
     return buildWhatsappUrl(message);
   }

@@ -7,6 +7,7 @@
   const REMOTE_REFRESH_INTERVAL_MS = supabaseUtils ? supabaseUtils.getRefreshInterval() : 30000;
   const DEFAULT_PAYMENT_TEXT = "A combinar pelo WhatsApp";
   const DEFAULT_DELIVERY_TEXT = "Taxa de entrega a combinar pelo WhatsApp";
+  const THEME_STORAGE_KEY = "wvcouros-theme";
   const DEFAULT_STATUS_LABELS = {
     disponivel: "Disponível",
     esgotado: "Esgotado",
@@ -45,6 +46,7 @@
 
   const productsGrid = document.getElementById("productsGrid");
   const catalogTypeFilters = document.getElementById("catalogTypeFilters");
+  const themeToggle = document.getElementById("themeToggle");
   const navWhatsapp = document.getElementById("navWhatsapp");
   const ctaWhatsapp = document.getElementById("ctaWhatsapp");
   const modal = document.getElementById("modal");
@@ -80,6 +82,82 @@
   let activeProductType = "all";
   let remoteRefreshTimer = null;
   let isRemoteLoading = false;
+
+  function readStoredThemePreference() {
+    try {
+      return window.localStorage.getItem(THEME_STORAGE_KEY) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function saveThemePreference(theme) {
+    try {
+      if (theme === "light" || theme === "dark") {
+        window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+      } else {
+        window.localStorage.removeItem(THEME_STORAGE_KEY);
+      }
+    } catch (error) {
+      // Se o navegador bloquear storage, o tema segue funcional so nesta visita.
+    }
+  }
+
+  function resolveThemePreference(preference) {
+    if (preference === "light" || preference === "dark") {
+      return preference;
+    }
+
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return prefersDark ? "dark" : "light";
+  }
+
+  function applyTheme(theme) {
+    const resolvedTheme = theme === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", resolvedTheme);
+    document.documentElement.style.colorScheme = resolvedTheme;
+
+    if (!themeToggle) {
+      return;
+    }
+
+    const nextLabel = resolvedTheme === "dark" ? "Ativar modo claro" : "Ativar modo escuro";
+    themeToggle.dataset.theme = resolvedTheme;
+    themeToggle.setAttribute("aria-label", nextLabel);
+    themeToggle.setAttribute("title", nextLabel);
+  }
+
+  function initializeThemeToggle() {
+    applyTheme(resolveThemePreference(readStoredThemePreference()));
+
+    if (!themeToggle) {
+      return;
+    }
+
+    themeToggle.addEventListener("click", function() {
+      const currentTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      saveThemePreference(nextTheme);
+      applyTheme(nextTheme);
+    });
+
+    if (!window.matchMedia) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handlePreferenceChange = function() {
+      if (!readStoredThemePreference()) {
+        applyTheme(resolveThemePreference(""));
+      }
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handlePreferenceChange);
+    } else if (typeof mediaQuery.addListener === "function") {
+      mediaQuery.addListener(handlePreferenceChange);
+    }
+  }
 
   function parseList(value) {
     if (Array.isArray(value)) {
@@ -1014,6 +1092,7 @@
   }
 
   document.getElementById("year").textContent = new Date().getFullYear();
+  initializeThemeToggle();
   refreshGlobalWhatsappLinks();
   showCatalogMessage("Carregando catálogo...");
   loadCatalog();

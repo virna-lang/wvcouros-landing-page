@@ -12,12 +12,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Urbanist:wght@300;400;500;600&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=League+Spartan:wght@300;400;500;600;700&display=swap"
   rel="stylesheet"
 />
 <script>
   (function() {
     const storageKey = "wvcouros-theme";
+    const params = new URLSearchParams(window.location.search);
+    const previewTheme = params.get("theme");
     let savedTheme = "";
 
     try {
@@ -26,7 +28,9 @@
       savedTheme = "";
     }
 
-    const resolvedTheme = savedTheme === "dark" ? "dark" : "light";
+    const resolvedTheme = previewTheme === "dark" || previewTheme === "light"
+      ? previewTheme
+      : (savedTheme === "dark" ? "dark" : "light");
 
     document.documentElement.setAttribute("data-theme", resolvedTheme);
     document.documentElement.style.colorScheme = resolvedTheme;
@@ -142,11 +146,11 @@
   }
 
   body {
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
     background: var(--bg);
     color: var(--ink);
     line-height: 1.6;
-    font-weight: 300;
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
     transition:
       background 0.3s ease,
@@ -184,7 +188,8 @@
   }
 
   .eyebrow {
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 500;
     font-size: 11px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -223,7 +228,8 @@
   }
 
   .nav-link {
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.28em;
     text-transform: uppercase;
@@ -283,7 +289,8 @@
 
   .hero-link {
     display: inline-block;
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -466,7 +473,8 @@
   .catalog-filter-btn {
     border: none;
     background: transparent;
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 500;
     color: var(--muted);
     font-size: 11px;
     letter-spacing: 0.28em;
@@ -818,9 +826,9 @@
   }
 
   .modal-section h3 {
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 500;
     font-size: 11px;
-    font-weight: 400;
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--muted);
@@ -894,7 +902,8 @@
     background: var(--whatsapp-btn-bg);
     color: var(--whatsapp-btn-color);
     border: none;
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -963,7 +972,8 @@
     justify-content: center;
     min-height: 52px;
     border-radius: 999px;
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -1014,7 +1024,8 @@
   .footer-brand strong {
     display: block;
     margin-bottom: 2px;
-    font-family: "Urbanist", "Inter", sans-serif;
+    font-family: "League Spartan", "Urbanist", "Inter", sans-serif;
+    font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.3em;
     text-transform: uppercase;

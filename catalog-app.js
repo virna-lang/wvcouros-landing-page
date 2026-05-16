@@ -8,6 +8,7 @@
   const DEFAULT_PAYMENT_TEXT = "A combinar pelo WhatsApp";
   const DEFAULT_DELIVERY_TEXT = "Taxa de entrega a combinar pelo WhatsApp";
   const THEME_STORAGE_KEY = "wvcouros-theme";
+  const THEME_PREVIEW = new URLSearchParams(window.location.search).get("theme");
   const DEFAULT_STATUS_LABELS = {
     disponivel: "Disponível",
     esgotado: "Esgotado",
@@ -104,6 +105,9 @@
   }
 
   function resolveThemePreference(preference) {
+    if (THEME_PREVIEW === "dark" || THEME_PREVIEW === "light") {
+      return THEME_PREVIEW;
+    }
     return preference === "dark" ? "dark" : "light";
   }
 

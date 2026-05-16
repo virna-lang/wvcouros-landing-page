@@ -781,6 +781,7 @@
 <script src="produtos.js"></script>
 <script>
   const WHATSAPP_NUMBER = "5585997586148";
+  const REMOTE_REFRESH_INTERVAL_MS = 30000;
   const PRODUCTS_ENDPOINT =
     window.VW_CONFIG && typeof window.VW_CONFIG.productsEndpoint === "string"
       ? window.VW_CONFIG.productsEndpoint.trim()
@@ -818,6 +819,8 @@
   let currentProduct = null;
   let currentColor = null;
   let currentImage = null;
+  let remoteRefreshTimer = null;
+  let isRemoteLoading = false;
 
   function showCatalogMessage(message) {
     productsGrid.innerHTML =
@@ -1238,7 +1241,12 @@
       return;
     }
 
-    const callbackName = "__vwProductsCallback";
+    if (isRemoteLoading) {
+      return;
+    }
+
+    isRemoteLoading = true;
+    const callbackName = "__vwProductsCallback_" + Date.now();
     const script = document.createElement("script");
     const separator = PRODUCTS_ENDPOINT.indexOf("?") >= 0 ? "&" : "?";
     let fallbackApplied = false;
@@ -1248,11 +1256,13 @@
       }
 
       fallbackApplied = true;
+      isRemoteLoading = false;
       applyFallbackProducts();
     }, 4000);
 
     window[callbackName] = function(payload) {
       window.clearTimeout(timeoutId);
+      isRemoteLoading = false;
       const applied = applyRemoteProducts(payload);
       cleanupRemoteLoader(script, callbackName);
 
@@ -1268,12 +1278,23 @@
 
       fallbackApplied = true;
       window.clearTimeout(timeoutId);
+      isRemoteLoading = false;
       cleanupRemoteLoader(script, callbackName);
       applyFallbackProducts();
     };
 
     script.src = PRODUCTS_ENDPOINT + separator + "callback=" + callbackName + "&ts=" + Date.now();
     document.head.appendChild(script);
+  }
+
+  function startRemoteAutoRefresh() {
+    if (!PRODUCTS_ENDPOINT || remoteRefreshTimer) {
+      return;
+    }
+
+    remoteRefreshTimer = window.setInterval(function() {
+      loadRemoteProducts();
+    }, REMOTE_REFRESH_INTERVAL_MS);
   }
 
   document.getElementById("year").textContent = new Date().getFullYear();
@@ -1285,6 +1306,13 @@
     renderProducts();
   }
   loadRemoteProducts();
+  startRemoteAutoRefresh();
+
+  document.addEventListener("visibilitychange", function() {
+    if (!document.hidden) {
+      loadRemoteProducts();
+    }
+  });
 </script>
 </body>
 </html>

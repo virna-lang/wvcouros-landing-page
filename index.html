@@ -1221,23 +1221,17 @@
     const callbackName = "__vwProductsCallback";
     const script = document.createElement("script");
     const separator = PRODUCTS_ENDPOINT.indexOf("?") >= 0 ? "&" : "?";
-    let settled = false;
+    let fallbackApplied = false;
     const timeoutId = window.setTimeout(function() {
-      if (settled) {
+      if (fallbackApplied) {
         return;
       }
 
-      settled = true;
-      cleanupRemoteLoader(script, callbackName);
+      fallbackApplied = true;
       applyFallbackProducts();
     }, 4000);
 
     window[callbackName] = function(payload) {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
       window.clearTimeout(timeoutId);
       const applied = applyRemoteProducts(payload);
       cleanupRemoteLoader(script, callbackName);
@@ -1248,11 +1242,11 @@
     };
 
     script.onerror = function() {
-      if (settled) {
+      if (fallbackApplied) {
         return;
       }
 
-      settled = true;
+      fallbackApplied = true;
       window.clearTimeout(timeoutId);
       cleanupRemoteLoader(script, callbackName);
       applyFallbackProducts();

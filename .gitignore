@@ -18,4 +18,5 @@ GUIA-PLANILHA-APPS-SCRIPT.md
 
 .vercel
 
-#
+# Local previews (not for deploy)
+_preview/

@@ -812,6 +812,18 @@
     return colorIdBySlug;
   }
 
+  async function saveEditorState() {
+    const productId = await saveProductCore();
+    const colorIdBySlug = await saveColorsCore(productId);
+    const galleryResult = await uploadPendingGallerySelection(productId, getCurrentProduct(), colorIdBySlug);
+
+    return {
+      productId: productId,
+      galleryUploaded: Boolean(galleryResult && galleryResult.uploaded),
+      galleryCount: galleryResult && typeof galleryResult.count === "number" ? galleryResult.count : 0
+    };
+  }
+
   async function saveProduct(event) {
     event.preventDefault();
 
@@ -821,9 +833,9 @@
     }
 
     try {
-      showMessage(els.productMessage, "Salvando produto...", "info");
-      await saveProductCore();
-      showMessage(els.productMessage, "Produto salvo com sucesso.", "success");
+      showMessage(els.productMessage, "Salvando alteracoes do produto...", "info");
+      await saveEditorState();
+      showMessage(els.productMessage, "Alteracoes salvas com sucesso.", "success");
       await loadDashboardData();
     } catch (error) {
       console.error(error);
@@ -838,10 +850,9 @@
     }
 
     try {
-      showMessage(els.colorsMessage, "Salvando cores e imagem principal...", "info");
-      const productId = await saveProductCore();
-      await saveColorsCore(productId);
-      showMessage(els.colorsMessage, "Cores e imagem principal salvas com sucesso.", "success");
+      showMessage(els.colorsMessage, "Salvando cores, imagem principal e pendencias da galeria...", "info");
+      await saveEditorState();
+      showMessage(els.colorsMessage, "Cores e imagens salvas com sucesso.", "success");
       await loadDashboardData();
     } catch (error) {
       console.error(error);

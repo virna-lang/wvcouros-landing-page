@@ -778,7 +778,8 @@
     tabaco: "#7b5535"
   };
 
-  let PRODUCTS = normalizeProducts(Array.isArray(window.VW_PRODUCTS) ? window.VW_PRODUCTS : []);
+  const LOCAL_PRODUCTS = normalizeProducts(Array.isArray(window.VW_PRODUCTS) ? window.VW_PRODUCTS : []);
+  let PRODUCTS = PRODUCTS_ENDPOINT ? [] : LOCAL_PRODUCTS;
 
   const productsGrid = document.getElementById("productsGrid");
   const navWhatsapp = document.getElementById("navWhatsapp");
@@ -799,6 +800,13 @@
   let currentProduct = null;
   let currentColor = null;
   let currentImage = null;
+
+  function showCatalogMessage(message) {
+    productsGrid.innerHTML =
+      '<p style="grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 14px;">' +
+      escapeHtml(message) +
+      "</p>";
+  }
 
   function normalizeProducts(items) {
     return (Array.isArray(items) ? items : [])
@@ -1046,7 +1054,7 @@
 
   function renderProducts() {
     if (!PRODUCTS.length) {
-      productsGrid.innerHTML = "";
+      showCatalogMessage("Nenhum produto disponível no momento.");
       return;
     }
 
@@ -1168,7 +1176,7 @@
 
     const normalized = normalizeProducts(remoteList);
     if (!normalized.length) {
-      return;
+      return false;
     }
 
     PRODUCTS = normalized;
@@ -1183,6 +1191,13 @@
         openModal(updatedProduct);
       }
     }
+
+    return true;
+  }
+
+  function applyFallbackProducts() {
+    PRODUCTS = LOCAL_PRODUCTS;
+    renderProducts();
   }
 
   function cleanupRemoteLoader(script, callbackName) {
@@ -1199,20 +1214,48 @@
 
   function loadRemoteProducts() {
     if (!PRODUCTS_ENDPOINT) {
+      applyFallbackProducts();
       return;
     }
 
     const callbackName = "__vwProductsCallback";
     const script = document.createElement("script");
     const separator = PRODUCTS_ENDPOINT.indexOf("?") >= 0 ? "&" : "?";
+    let settled = false;
+    const timeoutId = window.setTimeout(function() {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      cleanupRemoteLoader(script, callbackName);
+      applyFallbackProducts();
+    }, 4000);
 
     window[callbackName] = function(payload) {
-      applyRemoteProducts(payload);
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      window.clearTimeout(timeoutId);
+      const applied = applyRemoteProducts(payload);
       cleanupRemoteLoader(script, callbackName);
+
+      if (!applied) {
+        applyFallbackProducts();
+      }
     };
 
     script.onerror = function() {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      window.clearTimeout(timeoutId);
       cleanupRemoteLoader(script, callbackName);
+      applyFallbackProducts();
     };
 
     script.src = PRODUCTS_ENDPOINT + separator + "callback=" + callbackName + "&ts=" + Date.now();
@@ -1222,7 +1265,11 @@
   document.getElementById("year").textContent = new Date().getFullYear();
   navWhatsapp.href = buildDefaultWhatsappLink();
   ctaWhatsapp.href = buildDefaultWhatsappLink();
-  renderProducts();
+  if (PRODUCTS_ENDPOINT) {
+    showCatalogMessage("Carregando catálogo...");
+  } else {
+    renderProducts();
+  }
   loadRemoteProducts();
 </script>
 </body>

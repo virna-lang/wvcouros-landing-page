@@ -8,6 +8,10 @@
   const DEFAULT_PAYMENT_TEXT = "A combinar pelo WhatsApp";
   const DEFAULT_DELIVERY_TEXT = "Taxa de entrega a combinar pelo WhatsApp";
   const THEME_STORAGE_KEY = "wvcouros-theme";
+  const MODAL_QUERY_PARAM = "produto";
+  const HISTORY_ROOT_STATE_KEY = "__wvCatalog";
+  const HISTORY_MODAL_PRODUCT_KEY = "__wvModalProduct";
+  const HISTORY_MODAL_ENTRY_KEY = "__wvModalEntry";
   const THEME_PREVIEW = new URLSearchParams(window.location.search).get("theme");
   const DEFAULT_STATUS_LABELS = {
     disponivel: "Disponível",
@@ -83,6 +87,110 @@
   let activeProductType = "all";
   let remoteRefreshTimer = null;
   let isRemoteLoading = false;
+
+  function ensureCatalogHistoryState() {
+    if (!window.history || typeof window.history.replaceState !== "function") {
+      return;
+    }
+
+    const baseState = Object.assign({}, window.history.state || {});
+    if (baseState[HISTORY_ROOT_STATE_KEY]) {
+      return;
+    }
+
+    baseState[HISTORY_ROOT_STATE_KEY] = true;
+    window.history.replaceState(baseState, "", window.location.href);
+  }
+
+  function readProductRouteId() {
+    return String(new URLSearchParams(window.location.search).get(MODAL_QUERY_PARAM) || "").trim();
+  }
+
+  function getProductRouteId(product) {
+    if (!product) {
+      return "";
+    }
+
+    return String(product.slug || product.id || "").trim();
+  }
+
+  function buildCatalogUrl(productRouteId) {
+    const url = new URL(window.location.href);
+
+    if (productRouteId) {
+      url.searchParams.set(MODAL_QUERY_PARAM, productRouteId);
+    } else {
+      url.searchParams.delete(MODAL_QUERY_PARAM);
+    }
+
+    return url.toString();
+  }
+
+  function buildHistoryState(productRouteId, entryType) {
+    const nextState = Object.assign({}, window.history.state || {});
+    nextState[HISTORY_ROOT_STATE_KEY] = true;
+
+    delete nextState[HISTORY_MODAL_PRODUCT_KEY];
+    delete nextState[HISTORY_MODAL_ENTRY_KEY];
+
+    if (productRouteId) {
+      nextState[HISTORY_MODAL_PRODUCT_KEY] = productRouteId;
+      nextState[HISTORY_MODAL_ENTRY_KEY] = entryType || "push";
+    }
+
+    return nextState;
+  }
+
+  function findProductByRouteId(routeId) {
+    const normalizedRouteId = String(routeId || "").trim();
+    if (!normalizedRouteId) {
+      return null;
+    }
+
+    return products.find(function(product) {
+      return product.id === normalizedRouteId || product.slug === normalizedRouteId;
+    }) || null;
+  }
+
+  function finalizeModalClose() {
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+    currentProduct = null;
+    currentColorId = null;
+    currentImage = null;
+    currentGallery = [];
+    modalImage.src = "";
+    modalImage.alt = "";
+    modalThumbs.innerHTML = "";
+    updateNavButtons();
+  }
+
+  function syncModalWithLocation() {
+    const routeProductId = readProductRouteId();
+    const productFromRoute = findProductByRouteId(routeProductId);
+
+    if (!productFromRoute) {
+      if (routeProductId && window.history && typeof window.history.replaceState === "function") {
+        window.history.replaceState(buildHistoryState(), "", buildCatalogUrl());
+      }
+      if (modal.classList.contains("active")) {
+        finalizeModalClose();
+      }
+      return false;
+    }
+
+    const currentState = window.history ? (window.history.state || {}) : {};
+    if (!currentState[HISTORY_MODAL_PRODUCT_KEY] && window.history && typeof window.history.replaceState === "function") {
+      window.history.replaceState(
+        buildHistoryState(routeProductId, "direct"),
+        "",
+        buildCatalogUrl(routeProductId)
+      );
+    }
+
+    openModal(productFromRoute, { skipHistory: true });
+    return true;
+  }
 
   function readStoredThemePreference() {
     try {
@@ -616,6 +724,9 @@
         '<div class="product-image">' +
         productBadge +
         statusBadge +
+        '<span class="product-image-backdrop" aria-hidden="true">' +
+        '<img src="' + escapeHtml(primaryImage) + '" alt="" />' +
+        "</span>" +
         '<img class="' + imageClass + '" src="' + escapeHtml(primaryImage) + '" alt="' + escapeHtml(product.name) + '" />' +
         "</div>" +
         '<h3 class="product-name">' + escapeHtml(product.name) + "</h3>" +
@@ -723,10 +834,13 @@
     });
   }
 
-  function openModal(product) {
+  function openModal(product, options) {
     if (!product) {
       return;
     }
+
+    const modalOptions = options || {};
+    const productRouteId = getProductRouteId(product);
 
     currentProduct = product;
     const defaultColor = getDefaultColor(product);
@@ -747,19 +861,37 @@
     renderCurrentStatus(product, defaultColor);
     modal.classList.add("active");
     document.body.style.overflow = "hidden";
+
+    if (!modalOptions.skipHistory && productRouteId && window.history) {
+      window.history.pushState(
+        buildHistoryState(productRouteId, "push"),
+        "",
+        buildCatalogUrl(productRouteId)
+      );
+    }
   }
 
-  function closeModal() {
-    modal.classList.remove("active");
-    document.body.style.overflow = "";
-    currentProduct = null;
-    currentColorId = null;
-    currentImage = null;
-    currentGallery = [];
-    modalImage.src = "";
-    modalImage.alt = "";
-    modalThumbs.innerHTML = "";
-    updateNavButtons();
+  function closeModal(options) {
+    if (!modal.classList.contains("active")) {
+      return;
+    }
+
+    const modalOptions = options || {};
+    const currentState = window.history ? (window.history.state || {}) : {};
+    const modalEntryType = String(currentState[HISTORY_MODAL_ENTRY_KEY] || "").trim();
+
+    if (!modalOptions.skipHistory && window.history) {
+      if (modalEntryType === "push" && typeof window.history.back === "function") {
+        window.history.back();
+        return;
+      }
+
+      if (modalEntryType === "direct" && typeof window.history.replaceState === "function") {
+        window.history.replaceState(buildHistoryState(), "", buildCatalogUrl());
+      }
+    }
+
+    finalizeModalClose();
   }
 
   window.closeModal = closeModal;
@@ -786,6 +918,10 @@
       goToGalleryDelta(-1);
     });
   }
+
+  window.addEventListener("popstate", function() {
+    syncModalWithLocation();
+  });
 
   if (modalNext) {
     modalNext.addEventListener("click", function() {
@@ -851,8 +987,15 @@
       });
 
       if (updatedProduct) {
-        openModal(updatedProduct);
+        openModal(updatedProduct, { skipHistory: true });
+      } else {
+        if (window.history && typeof window.history.replaceState === "function") {
+          window.history.replaceState(buildHistoryState(), "", buildCatalogUrl());
+        }
+        closeModal({ skipHistory: true });
       }
+    } else {
+      syncModalWithLocation();
     }
 
     return true;
@@ -1085,6 +1228,7 @@
   }
 
   document.getElementById("year").textContent = new Date().getFullYear();
+  ensureCatalogHistoryState();
   initializeThemeToggle();
   refreshGlobalWhatsappLinks();
   showCatalogLoading();

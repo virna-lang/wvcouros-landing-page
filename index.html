@@ -676,19 +676,42 @@
 
   .product-image {
     position: relative;
+    aspect-ratio: 4 / 5;
     margin-bottom: 22px;
     overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: #ecd9c4;
   }
 
-  .product-image img {
+  .product-image-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .product-image-backdrop img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.08);
+    filter: blur(24px) saturate(0.92);
+    opacity: 0.92;
+  }
+
+  .product-image img.product-photo {
+    width: 100%;
+    height: 100%;
     display: block;
+    position: relative;
+    z-index: 1;
+    object-fit: contain;
+    object-position: center;
     transition: transform 0.28s ease, opacity 0.28s ease;
   }
 
-  .product-card button:hover .product-image img,
-  .product-card button:focus-visible .product-image img {
+  .product-card button:hover .product-image img.product-photo,
+  .product-card button:focus-visible .product-image img.product-photo {
     transform: scale(1.02);
   }
 
@@ -794,17 +817,35 @@
     position: absolute;
     top: 20px;
     right: 22px;
+    z-index: 6;
+    padding: 0;
     background: transparent;
     border: none;
     color: var(--ink);
     cursor: pointer;
-    font-size: 28px;
-    line-height: 1;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
   .modal-close:hover,
   .modal-close:focus-visible {
     color: var(--burgundy);
+  }
+
+  .modal-close svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    fill: none;
+    pointer-events: none;
   }
 
   .modal-visual {
@@ -1355,6 +1396,17 @@
       padding: 0;
     }
 
+    .modal-close {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 12px);
+      right: calc(env(safe-area-inset-right, 0px) + 12px);
+      background: rgba(34, 4, 11, 0.72);
+      color: var(--white);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 10px 22px rgba(14, 3, 6, 0.22);
+    }
+
     .modal-body {
       padding: 34px 24px;
     }
@@ -1542,7 +1594,12 @@
 
 <div class="modal-overlay" id="modal" onclick="if (event.target === this) closeModal()">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
-    <button class="modal-close" type="button" aria-label="Fechar" onclick="closeModal()">x</button>
+    <button class="modal-close" type="button" aria-label="Fechar e voltar" onclick="closeModal()">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 6 18 18"></path>
+        <path d="M18 6 6 18"></path>
+      </svg>
+    </button>
 
     <div class="modal-visual">
       <span class="modal-visual-status" id="modalVisualStatus" hidden></span>

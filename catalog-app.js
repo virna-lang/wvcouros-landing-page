@@ -724,9 +724,6 @@
         '<div class="product-image">' +
         productBadge +
         statusBadge +
-        '<span class="product-image-backdrop" aria-hidden="true">' +
-        '<img src="' + escapeHtml(primaryImage) + '" alt="" />' +
-        "</span>" +
         '<img class="' + imageClass + '" src="' + escapeHtml(primaryImage) + '" alt="' + escapeHtml(product.name) + '" />' +
         "</div>" +
         '<h3 class="product-name">' + escapeHtml(product.name) + "</h3>" +

@@ -946,6 +946,12 @@
     object-fit: contain;
   }
 
+  .product-image img.is-placeholder,
+  .modal-visual img.is-placeholder,
+  .modal-thumb img.is-placeholder {
+    background: linear-gradient(135deg, #f4e4cf, #e7ccb0);
+  }
+
   .modal-body {
     padding: 56px 48px;
     display: flex;
@@ -1584,7 +1590,7 @@
         <button class="modal-nav prev" type="button" id="modalPrev" aria-label="Foto anterior" hidden>
           <span aria-hidden="true">&#10094;</span>
         </button>
-        <img id="modalImage" src="" alt="" />
+        <img id="modalImage" src="" alt="" decoding="async" onerror="window.VWCatalogHandleImageError && window.VWCatalogHandleImageError(this)" />
         <button class="modal-nav next" type="button" id="modalNext" aria-label="Próxima foto" hidden>
           <span aria-hidden="true">&#10095;</span>
         </button>

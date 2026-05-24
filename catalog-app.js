@@ -87,6 +87,66 @@
   let activeProductType = "all";
   let remoteRefreshTimer = null;
   let isRemoteLoading = false;
+  const IMAGE_PLACEHOLDER_ALT = "Imagem indisponivel";
+  const PRODUCT_IMAGE_PLACEHOLDER = buildPlaceholderImage(IMAGE_PLACEHOLDER_ALT);
+
+  function escapeSvgText(value) {
+    return String(value || "").replace(/[&<>"']/g, function(char) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char];
+    });
+  }
+
+  function buildPlaceholderImage(label) {
+    const safeLabel = escapeSvgText(label || IMAGE_PLACEHOLDER_ALT);
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 960" role="img" aria-label="' + safeLabel + '">' +
+      '<defs>' +
+      '<linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#f4e4cf"/>' +
+      '<stop offset="100%" stop-color="#e7ccb0"/>' +
+      "</linearGradient>" +
+      "</defs>" +
+      '<rect width="720" height="960" fill="url(#g)"/>' +
+      '<g fill="none" stroke="#9b6b49" stroke-width="18" opacity="0.65">' +
+      '<rect x="170" y="250" width="380" height="320" rx="34"/>' +
+      '<path d="M248 304c0-72 48-122 112-122s112 50 112 122"/>' +
+      "</g>" +
+      '<text x="50%" y="72%" text-anchor="middle" font-family="Georgia, serif" font-size="34" fill="#7e5235">' + safeLabel + "</text>" +
+      "</svg>";
+    return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+  }
+
+  function getImageSource(url) {
+    const resolved = String(url || "").trim();
+    return resolved || PRODUCT_IMAGE_PLACEHOLDER;
+  }
+
+  function handleCatalogImageError(image) {
+    if (!image || image.dataset.placeholderApplied === "true") {
+      return;
+    }
+
+    image.dataset.placeholderApplied = "true";
+    image.onerror = null;
+    image.src = PRODUCT_IMAGE_PLACEHOLDER;
+    image.alt = IMAGE_PLACEHOLDER_ALT;
+    image.classList.add("is-placeholder");
+  }
+
+  window.VWCatalogHandleImageError = handleCatalogImageError;
+
+  function buildImageMarkup(className, src, alt, options) {
+    const loading = options && options.loading ? options.loading : "lazy";
+    return (
+      '<img class="' + escapeHtml(className || "") + '" src="' + escapeHtml(getImageSource(src)) + '" alt="' + escapeHtml(alt || IMAGE_PLACEHOLDER_ALT) + '" loading="' + escapeHtml(loading) + '" decoding="async" onerror="window.VWCatalogHandleImageError && window.VWCatalogHandleImageError(this)" />'
+    );
+  }
 
   function ensureCatalogHistoryState() {
     if (!window.history || typeof window.history.replaceState !== "function") {
@@ -605,8 +665,9 @@
 
   function setModalImage(url, alt) {
     currentImage = String(url || "").trim();
-    modalImage.src = currentImage;
-    modalImage.alt = alt || "";
+    modalImage.classList.toggle("is-placeholder", !currentImage);
+    modalImage.src = getImageSource(currentImage);
+    modalImage.alt = alt || IMAGE_PLACEHOLDER_ALT;
     refreshGalleryControls();
   }
 
@@ -622,13 +683,15 @@
     currentGallery = getGalleryImages(currentProduct, colorRecord);
     if (currentGallery.length && currentGallery.indexOf(currentImage) < 0) {
       currentImage = currentGallery[0];
-      modalImage.src = currentImage;
+      modalImage.classList.toggle("is-placeholder", !currentImage);
+      modalImage.src = getImageSource(currentImage);
       modalImage.alt = currentProduct ? currentProduct.name : "";
     }
     if (!currentGallery.length) {
       currentImage = "";
-      modalImage.src = "";
-      modalImage.alt = "";
+      modalImage.classList.add("is-placeholder");
+      modalImage.src = PRODUCT_IMAGE_PLACEHOLDER;
+      modalImage.alt = IMAGE_PLACEHOLDER_ALT;
     }
     renderModalThumbs();
     updateNavButtons();
@@ -673,11 +736,7 @@
         '" data-thumb="' +
         escapeHtml(url) +
         '">' +
-        '<img src="' +
-        escapeHtml(url) +
-        '" alt="' +
-        escapeHtml(currentProduct.name) +
-        '" />' +
+        buildImageMarkup("", url, currentProduct.name) +
         "</button>"
       );
     }).join("");
@@ -724,7 +783,7 @@
         '<div class="product-image">' +
         productBadge +
         statusBadge +
-        '<img class="' + imageClass + '" src="' + escapeHtml(primaryImage) + '" alt="' + escapeHtml(product.name) + '" />' +
+        buildImageMarkup(imageClass, primaryImage, product.name) +
         "</div>" +
         '<h3 class="product-name">' + escapeHtml(product.name) + "</h3>" +
         '<div class="product-price">' + formatPrice(product.price) + "</div>" +
@@ -1025,7 +1084,7 @@
 
     isRemoteLoading = true;
     try {
-      const client = supabaseUtils.createClient();
+      const client = supabaseUtils.getPublicClient ? supabaseUtils.getPublicClient() : supabaseUtils.createClient({ mode: "public" });
       const [
         settingsResult,
         badgesResult,
@@ -1054,12 +1113,12 @@
       if (productIds.length) {
         const [colorsResult, imagesResult] = await Promise.all([
           client.from("product_colors")
-            .select("id, product_id, color_name, color_slug, stock_quantity, color_status, primary_image_url, sort_order")
+            .select("id, product_id, color_name, color_slug, stock_quantity, color_status, primary_image_path, primary_image_url, sort_order")
             .in("product_id", productIds)
             .order("sort_order", { ascending: true })
             .order("created_at", { ascending: true }),
           client.from("product_images")
-            .select("id, product_id, product_color_id, public_url, alt_text, is_primary, sort_order")
+            .select("id, product_id, product_color_id, storage_path, public_url, alt_text, is_primary, sort_order")
             .in("product_id", productIds)
             .order("sort_order", { ascending: true })
             .order("created_at", { ascending: true })
@@ -1112,7 +1171,7 @@
     (payload.images || []).forEach(function(image) {
       const row = {
         id: image.id,
-        url: supabaseUtils.resolvePublicImage(image.public_url),
+        url: supabaseUtils.resolvePublicImage(image.public_url || image.storage_path),
         isPrimary: Boolean(image.is_primary),
         sortOrder: Number(image.sort_order || 0) || 0
       };
@@ -1138,7 +1197,7 @@
       }
 
       const colorImages = uniqueList([
-        color.primary_image_url
+        supabaseUtils.resolvePublicImage(color.primary_image_url || color.primary_image_path)
       ].concat((imagesByColor[color.id] || []).sort(sortByPrimaryThenOrder).map(function(item) {
         return item.url;
       })));
@@ -1150,7 +1209,7 @@
         stockQuantity: color.stock_quantity == null ? null : Number(color.stock_quantity),
         status: String(color.color_status || "disponivel").trim(),
         statusLabel: statusLabel(String(color.color_status || "disponivel").trim()),
-        primaryImageUrl: String(color.primary_image_url || "").trim(),
+        primaryImageUrl: supabaseUtils.resolvePublicImage(color.primary_image_url || color.primary_image_path),
         images: colorImages,
         sortOrder: Number(color.sort_order || 0) || 0
       });

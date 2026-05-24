@@ -1004,7 +1004,7 @@
   async function uploadFile(file, path) {
     const bucket = supabaseUtils.getSupabaseConfig().bucket;
     const uploadResult = await state.client.storage.from(bucket).upload(path, file, {
-      cacheControl: "3600",
+      cacheControl: "31536000",
       upsert: true
     });
 
@@ -1725,7 +1725,7 @@
     els.configMessage.textContent = "";
 
     try {
-      state.client = supabaseUtils.createClient();
+      state.client = supabaseUtils.getAdminClient ? supabaseUtils.getAdminClient() : supabaseUtils.createClient();
       const sessionResult = await state.client.auth.getSession();
       if (sessionResult.error) {
         throw sessionResult.error;
